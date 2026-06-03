@@ -7,6 +7,7 @@ import Processing from "@/components/Processing";
 import AnalysisReport from "@/components/AnalysisReport";
 import CinematicAtmosphere from "@/components/CinematicAtmosphere";
 import type { SkinAnalysis, LeadPayload } from "@/lib/types";
+import type { GhlMeta } from "@/lib/ghl";
 
 type Step = "welcome" | "capture" | "form" | "processing" | "result" | "error";
 
@@ -14,6 +15,7 @@ export default function Home() {
   const [step, setStep] = useState<Step>("welcome");
   const [selfie, setSelfie] = useState<string | null>(null);
   const [lead, setLead] = useState<LeadPayload | null>(null);
+  const [leadMeta, setLeadMeta] = useState<GhlMeta | null>(null);
   const [analysis, setAnalysis] = useState<SkinAnalysis | null>(null);
   const [afterImage, setAfterImage] = useState<string | null>(null);
   const [afterPending, setAfterPending] = useState(false);
@@ -24,6 +26,7 @@ export default function Home() {
   const reset = () => {
     setSelfie(null);
     setLead(null);
+    setLeadMeta(null);
     setAnalysis(null);
     setAfterImage(null);
     setAfterPending(false);
@@ -56,8 +59,13 @@ export default function Home() {
   // Runs only after the lead has been captured + pushed to GHL. `leadData` is
   // passed on the first call (state hasn't settled yet); the error-screen Retry
   // calls without it and falls back to the stored lead.
-  const runAnalysis = async (image: string, leadData?: LeadPayload | null) => {
+  const runAnalysis = async (
+    image: string,
+    leadData?: LeadPayload | null,
+    metaData?: GhlMeta | null,
+  ) => {
     const activeLead = leadData ?? lead;
+    const activeMeta = metaData ?? leadMeta;
     setStep("processing");
     setAfterImage(null);
     setMapImage(null);
@@ -89,14 +97,19 @@ export default function Home() {
       return;
     }
 
-    // PHASE 2 of lead capture — now that we have the analysis, push the concerns
-    // to GHL keyed by the lead's email so the existing contact is enriched.
-    // Fire-and-forget: a failure here never blocks the results reveal.
-    if (activeLead?.email) {
+    // PHASE 2 of lead capture — now that we have the analysis, push the FULL
+    // lead (same fields as the first webhook) plus the concerns to GHL, keyed by
+    // email so the existing contact is enriched. Fire-and-forget: a failure here
+    // never blocks the results reveal.
+    if (activeLead) {
       fetch("/api/lead/concerns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: activeLead.email, analysis: analysisResult }),
+        body: JSON.stringify({
+          ...activeLead,
+          analysis: analysisResult,
+          meta: activeMeta ?? undefined,
+        }),
       }).catch(() => {});
     }
 
@@ -218,9 +231,10 @@ export default function Home() {
           <section key="form" className="w-full animate-fade-scale">
             <LeadForm
               selfie={selfie}
-              onSubmitted={(submittedLead) => {
+              onSubmitted={(submittedLead, submittedMeta) => {
                 setLead(submittedLead);
-                runAnalysis(selfie, submittedLead);
+                setLeadMeta(submittedMeta);
+                runAnalysis(selfie, submittedLead, submittedMeta);
               }}
             />
           </section>

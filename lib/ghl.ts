@@ -14,6 +14,31 @@ export interface GhlMeta {
 }
 
 /**
+ * Builds GhlMeta from the client-sent `meta` object plus server-only signals
+ * (user-agent + IP) read from the request headers. Shared by both the lead and
+ * concerns routes so the two webhooks carry identical Meta fields.
+ */
+export function parseGhlMeta(input: unknown, req: Request): GhlMeta {
+  const o = (typeof input === "object" && input !== null ? input : {}) as Record<
+    string,
+    unknown
+  >;
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
+  const ipHeader =
+    req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "";
+  return {
+    event_id: str(o.event_id),
+    event_name: str(o.event_name) || "Lead",
+    event_source_url: str(o.event_source_url),
+    fbp: str(o.fbp),
+    fbc: str(o.fbc),
+    fbclid: str(o.fbclid),
+    client_user_agent: req.headers.get("user-agent") ?? "",
+    client_ip_address: ipHeader.split(",")[0]?.trim() ?? "",
+  };
+}
+
+/**
  * Shapes the lead into the flat JSON GoHighLevel inbound webhooks expect.
  * Field names are chosen to map cleanly onto GHL contact fields + GHL's
  * Facebook Conversions API action.
@@ -74,17 +99,22 @@ export async function pushLeadToGhl(
 }
 
 /**
- * Shapes the completed skin analysis into flat fields for GHL. Sent as a SECOND
- * webhook AFTER the analysis finishes — the lead push (buildGhlPayload) has
- * already created the contact, so this enriches the SAME record, matched by
- * email. The GHL inbound workflow must upsert by email for this to land on the
- * existing contact rather than create a duplicate.
+ * The SECOND webhook, sent AFTER the analysis finishes. It carries EVERY field
+ * the first (lead) webhook sends — reusing buildGhlPayload — PLUS the flattened
+ * skin analysis, so the event is a complete, self-contained contact record.
+ * Only `event_name` is overridden so the GHL workflow can branch on it; matched
+ * to the existing contact by email (the workflow should upsert by email).
  */
-export function buildConcernsPayload(email: string, analysis: SkinAnalysis) {
+export function buildConcernsPayload(
+  lead: LeadPayload,
+  analysis: SkinAnalysis,
+  meta: GhlMeta = {},
+) {
   return {
-    // Match key — links this back to the contact created by the lead push.
-    email: email.trim().toLowerCase(),
-    // Lets the GHL workflow branch on this vs. the initial "Lead" event.
+    // ---- All first-webhook fields (contact + Meta CAPI) ----
+    ...buildGhlPayload(lead, meta),
+
+    // Override the event label to distinguish from the initial "Lead" event.
     event_name: "SkinAnalysisCompleted",
 
     // ---- Flattened skin analysis ----
@@ -94,24 +124,24 @@ export function buildConcernsPayload(email: string, analysis: SkinAnalysis) {
       .join(", "),
     skin_summary: analysis.summary,
     veluria_recommendation: analysis.veluriaRecommendation,
-    submitted_at: new Date().toISOString(),
   };
 }
 
 /**
- * Best-effort: pushes the analysis concerns to GHL. Mirrors pushLeadToGhl —
- * same webhook URL, same "log and skip if not configured" fallback so a failure
- * never disrupts the user reaching their results.
+ * Best-effort: pushes the full lead + analysis concerns to GHL. Mirrors
+ * pushLeadToGhl — same webhook URL, same "log and skip if not configured"
+ * fallback so a failure never disrupts the user reaching their results.
  */
 export async function pushConcernsToGhl(
-  email: string,
+  lead: LeadPayload,
   analysis: SkinAnalysis,
+  meta: GhlMeta = {},
 ): Promise<void> {
   const url = process.env.GHL_WEBHOOK_URL;
   if (!url) {
     console.warn(
       "[ghl] GHL_WEBHOOK_URL not set — skipping concerns push. Payload:",
-      JSON.stringify(buildConcernsPayload(email, analysis)),
+      JSON.stringify(buildConcernsPayload(lead, analysis, meta)),
     );
     return;
   }
@@ -119,7 +149,7 @@ export async function pushConcernsToGhl(
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(buildConcernsPayload(email, analysis)),
+    body: JSON.stringify(buildConcernsPayload(lead, analysis, meta)),
   });
 
   if (!res.ok) {

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { LeadPayload, SkinGoal } from "@/lib/types";
+import type { GhlMeta } from "@/lib/ghl";
 import { getFbc, getFbclid, getFbp, newEventId, trackLead } from "@/lib/meta";
 
 const GOALS: SkinGoal[] = [
@@ -17,7 +18,7 @@ export default function LeadForm({
   onSubmitted,
 }: {
   selfie: string;
-  onSubmitted: (lead: LeadPayload) => void;
+  onSubmitted: (lead: LeadPayload, meta: GhlMeta) => void;
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -61,7 +62,9 @@ export default function LeadForm({
       }
       // Fire the browser Lead conversion with the same event id.
       trackLead(eventId);
-      onSubmitted(lead);
+      // Pass meta up so the phase-2 concerns webhook carries the same Meta
+      // fields as this lead push.
+      onSubmitted(lead, meta);
     } catch {
       setError("Network error. Please check your connection and try again.");
     } finally {

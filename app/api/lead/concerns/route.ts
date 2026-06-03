@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { pushConcernsToGhl } from "@/lib/ghl";
+import { validateLead } from "@/lib/validation";
+import { pushConcernsToGhl, parseGhlMeta } from "@/lib/ghl";
 import type { SkinAnalysis } from "@/lib/types";
 
 export const runtime = "nodejs";
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function isAnalysis(v: unknown): v is SkinAnalysis {
   if (typeof v !== "object" || v === null) return false;
@@ -18,35 +17,38 @@ function isAnalysis(v: unknown): v is SkinAnalysis {
 }
 
 /**
- * Phase 2 of lead capture: fired by the client AFTER the skin analysis returns,
- * sending the concerns to GHL keyed by email so the existing contact (created
- * by the phase-1 lead push) is enriched. Best-effort — the client calls this
- * fire-and-forget, so a non-200 here never blocks the user's results.
+ * Phase 2 of lead capture: fired by the client AFTER the skin analysis returns.
+ * Sends the FULL lead (same fields as the first webhook) PLUS the concerns to
+ * GHL, keyed by email so the existing contact is enriched. Best-effort — the
+ * client calls this fire-and-forget, so a non-200 here never blocks results.
  */
 export async function POST(req: Request) {
-  let body: { email?: unknown; analysis?: unknown };
+  let body: unknown;
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON." }, { status: 400 });
   }
 
-  const email = typeof body.email === "string" ? body.email.trim() : "";
-  if (!EMAIL_RE.test(email)) {
-    return NextResponse.json(
-      { error: "A valid email is required." },
-      { status: 400 },
-    );
+  // Reuse the lead validator so the second webhook carries a fully-formed
+  // contact, identical to the first.
+  const result = validateLead(body);
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: 400 });
   }
-  if (!isAnalysis(body.analysis)) {
+
+  const analysis = (body as { analysis?: unknown }).analysis;
+  if (!isAnalysis(analysis)) {
     return NextResponse.json(
       { error: "A valid analysis is required." },
       { status: 400 },
     );
   }
 
+  const meta = parseGhlMeta((body as { meta?: unknown }).meta, req);
+
   try {
-    await pushConcernsToGhl(email, body.analysis);
+    await pushConcernsToGhl(result.lead, analysis, meta);
   } catch (err) {
     console.error("[concerns] GHL push failed:", err);
     return NextResponse.json(
