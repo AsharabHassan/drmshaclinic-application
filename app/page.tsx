@@ -113,24 +113,44 @@ export default function Home() {
       }).catch(() => {});
     }
 
-    // STEP 2 — feed the analysis concerns into gpt-image-2 to generate ONE
-    // targeted, pointer-annotated image, reused for both the slider and the map.
-    // "medium" quality so the skin change actually renders visibly ("low"
-    // under-renders fine detail and the before/after looks near-identical).
+    // STEP 2 — fire the before/after and the treatment map in parallel so both
+    // resolve as fast as possible. Each call has one job: the transform does a
+    // clean skin retouch (no annotation overhead); the map route draws the
+    // clinical overlay on the original photo. Splitting these roughly halves the
+    // visible wait compared to a single annotated call.
     const concerns =
       analysisResult.annotations?.map((a) => ({
         area: a.area,
         concern: a.concern,
       })) ?? [];
 
-    fetchAfter(image, "medium", concerns, true).then((afterImg) => {
-      if (afterImg) {
-        setAfterImage(afterImg);
-        setMapImage(afterImg); // reuse the same image — no second generation
-      }
+    const mapZones =
+      analysisResult.annotations?.map((a) => ({
+        area: a.area,
+        severity: a.severity,
+      })) ?? [];
+
+    // Before/after slider — clean retouch, no annotation baked in.
+    fetchAfter(image, "medium", concerns, false).then((afterImg) => {
+      if (afterImg) setAfterImage(afterImg);
       setAfterPending(false);
-      setMapPending(false);
     });
+
+    // Treatment map — clinical overlay on the original photo.
+    fetch("/api/map", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image, areas: mapZones }),
+    })
+      .then(async (r) => {
+        const d = await r.json().catch(() => ({}));
+        return r.ok ? (d.image as string) : null;
+      })
+      .catch(() => null)
+      .then((mapImg) => {
+        if (mapImg) setMapImage(mapImg);
+        setMapPending(false);
+      });
   };
 
   const atmosphereScene =
@@ -275,7 +295,7 @@ export default function Home() {
         )}
       </div>
 
-      <footer className="relative z-10 mx-auto max-w-5xl px-6 pb-10 text-center text-[0.65rem] uppercase tracking-[0.14em] text-plum-mute/70">
+      <footer className={`relative z-10 mx-auto max-w-5xl px-6 text-center text-[0.65rem] uppercase tracking-[0.14em] text-plum-mute/70 ${step === "result" ? "pb-24" : "pb-10"}`}>
         © {new Date().getFullYear()} Sirona Aesthetics · Veluria by PB Serum · A
         cosmetic, non-diagnostic AI simulation · Not medical advice
       </footer>

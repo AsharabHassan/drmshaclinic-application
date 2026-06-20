@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { SkinAnalysis } from "@/lib/types";
 import AnnotatedFace from "./AnnotatedFace";
 import BeforeAfterSlider from "./BeforeAfterSlider";
@@ -94,6 +94,62 @@ function SectionHead({
   );
 }
 
+function StickyPreviewBar({
+  afterPending,
+  after,
+  previewRef,
+}: {
+  afterPending: boolean;
+  after: string | null;
+  previewRef: React.RefObject<HTMLElement | null>;
+}) {
+  const [scrolledPast, setScrolledPast] = useState(false);
+
+  useEffect(() => {
+    const el = previewRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setScrolledPast(!entry.isIntersecting),
+      { threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [previewRef]);
+
+  const scrollToPreview = () => {
+    previewRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  if (!scrolledPast) return null;
+
+  return (
+    <div className="no-print fixed bottom-4 inset-x-0 z-40 flex justify-center px-4 pointer-events-none">
+      <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-white/70 bg-white/80 px-5 py-3 backdrop-blur-xl shadow-[0_8px_32px_-10px_rgba(34,30,82,0.35)]">
+        {afterPending ? (
+          <>
+            <span className="h-4 w-4 shrink-0 animate-[spin_1.5s_linear_infinite] rounded-full border-2 border-plum/20 border-t-serum" />
+            <span className="text-sm text-plum">Generating your before &amp; after…</span>
+          </>
+        ) : after ? (
+          <>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 text-serum">
+              <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M5 8.5l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span className="text-sm font-medium text-plum">Your before &amp; after is ready</span>
+            <button
+              onClick={scrollToPreview}
+              className="ml-1 rounded-full bg-gradient-to-r from-serum to-amber px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition hover:opacity-90"
+            >
+              View ↑
+            </button>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export default function AnalysisReport({
   before,
   after,
@@ -113,6 +169,7 @@ export default function AnalysisReport({
 }) {
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const previewRef = useRef<HTMLElement>(null);
 
   const handlePdf = async () => {
     setPdfBusy(true);
@@ -132,7 +189,7 @@ export default function AnalysisReport({
   };
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-14">
+    <div className="mx-auto w-full max-w-3xl space-y-14 pb-24">
       <div className="text-center animate-fade-scale">
         <p className="eyebrow">Your Consultation</p>
         <h2 className="display mt-4 text-4xl text-plum sm:text-6xl">
@@ -141,7 +198,7 @@ export default function AnalysisReport({
       </div>
 
       {/* Before / After */}
-      <section className="animate-fade-scale" style={{ animationDelay: "80ms" }}>
+      <section ref={previewRef} className="animate-fade-scale" style={{ animationDelay: "80ms" }}>
         <SectionHead index="01" eyebrow="Before & After" title="Your Veluria preview" />
         {after ? (
           <div className="relative liquid-reveal">
@@ -352,6 +409,12 @@ export default function AnalysisReport({
           </div>
         </div>
       )}
+
+      <StickyPreviewBar
+        afterPending={afterPending}
+        after={after}
+        previewRef={previewRef}
+      />
     </div>
   );
 }
