@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Fraunces, Hanken_Grotesk } from "next/font/google";
+import { Cormorant_Garamond, Montserrat } from "next/font/google";
 import { META_PIXEL_ID } from "@/lib/meta";
 import "./globals.css";
 
-const display = Fraunces({
+const display = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
   style: ["normal", "italic"],
@@ -12,7 +12,7 @@ const display = Fraunces({
   display: "swap",
 });
 
-const sans = Hanken_Grotesk({
+const sans = Montserrat({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
   variable: "--font-sans",
@@ -20,9 +20,9 @@ const sans = Hanken_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Veluria Skin Studio | Sirona Aesthetics",
+  title: "AI Skin Consultation | Dr.M.Sha Wellness & Aesthetics Clinic",
   description:
-    "An AI skin consultation by Sirona Aesthetics — an in-depth analysis, a professional treatment map, and a preview of your results with Veluria Silk Skin by PB Serum.",
+    "A complimentary AI skin consultation by Dr.M.Sha Wellness and Aesthetics Clinic — an in-depth skin analysis, a professional treatment map, and a personalised preview of your results.",
 };
 
 export default function RootLayout({
@@ -57,54 +57,33 @@ export default function RootLayout({
         </noscript>
       </head>
       <body>
+        {/* Subtle warm atmosphere — minimal, clinical-clean */}
         <div className="atmosphere">
-          {/* living gradient mesh — Sirona cyan / magenta / yellow */}
           <div
-            className="orb animate-mesh-shift animate-blob-morph"
+            className="orb"
             style={{
-              top: "-12%",
-              right: "-8%",
-              width: "46vmax",
-              height: "46vmax",
+              top: "-10%",
+              right: "-5%",
+              width: "50vmax",
+              height: "50vmax",
               background:
-                "radial-gradient(circle at 50% 50%, #7fe3ee, #16b3c6 55%, transparent 72%)",
-            }}
-          />
-          <div
-            className="orb animate-mesh-shift-slow animate-blob-morph"
-            style={{
-              bottom: "-18%",
-              left: "-10%",
-              width: "44vmax",
-              height: "44vmax",
-              background:
-                "radial-gradient(circle at 50% 50%, #f7a6d2, #e6187c 50%, transparent 70%)",
-            }}
-          />
-          <div
-            className="orb animate-mesh-shift"
-            style={{
-              top: "30%",
-              left: "30%",
-              width: "30vmax",
-              height: "30vmax",
+                "radial-gradient(circle at 50% 50%, #E1EFF0, #d4e8ea 55%, transparent 72%)",
               opacity: 0.4,
-              background:
-                "radial-gradient(circle at 50% 50%, #ffd86b, transparent 68%)",
+              filter: "blur(70px)",
             }}
           />
-          {/* glossy floating serum droplets */}
           <div
-            className="orb-gloss animate-float"
-            style={{ top: "16%", left: "12%", width: "120px", height: "120px" }}
-          />
-          <div
-            className="orb-gloss animate-float-slow"
-            style={{ top: "62%", right: "14%", width: "90px", height: "90px" }}
-          />
-          <div
-            className="orb-gloss animate-float"
-            style={{ top: "40%", right: "30%", width: "60px", height: "60px" }}
+            className="orb"
+            style={{
+              bottom: "-15%",
+              left: "-8%",
+              width: "45vmax",
+              height: "45vmax",
+              background:
+                "radial-gradient(circle at 50% 50%, #FBF8F3, #f0ece4 60%, transparent 72%)",
+              opacity: 0.5,
+              filter: "blur(60px)",
+            }}
           />
         </div>
         <div className="relative z-10">{children}</div>

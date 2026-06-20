@@ -8,23 +8,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Sirona Aesthetics: deep-indigo text · cool near-white canvas ·
-        // cyan + magenta + yellow accents (from the Sirona mark)
+        // Dr.M.Sha Wellness & Aesthetics Clinic palette
+        // White canvas · warm cream · charcoal text · muted teal accent
         pearl: {
-          DEFAULT: "#f5f6fc", // cool near-white canvas
-          deep: "#e8ebf7",
+          DEFAULT: "#FFFFFF",  // pure white canvas
+          deep: "#FBF8F3",     // warm cream (section backgrounds)
         },
-        peach: "#f6d4e7", // light magenta tint
-        rose: "#c93f97", // mid magenta
-        amber: "#e6187c", // magenta accent (gradient partner of serum)
-        lilac: "#dde5f7", // soft cool lilac
-        sun: "#f8b015", // yellow accent
+        peach: "#F4F4F4",     // light grey (subtle backgrounds)
+        rose: "#9E9E9E",      // mid grey
+        amber: "#9E9E9E",     // mid grey (gradient partner of serum in legacy code)
+        lilac: "#F4F4F4",     // light grey
+        sun: "#F4F4F4",       // light grey
         plum: {
-          DEFAULT: "#211e52", // deep indigo (primary text)
-          soft: "#4f4a86",
-          mute: "#8f8bba",
+          DEFAULT: "#212121", // near-black (primary text / headings)
+          soft: "#3F3E3E",    // dark charcoal
+          mute: "#9E9E9E",    // mid grey
         },
-        serum: "#16b3c6", // CYAN accent
+        serum: "#6B9FA4",     // muted teal (subtle accent only)
       },
       fontFamily: {
         display: ["var(--font-display)", "Georgia", "serif"],
@@ -34,9 +34,9 @@ const config: Config = {
         couture: "0.3em",
       },
       boxShadow: {
-        dew: "0 30px 70px -30px rgba(22,179,198,0.35), 0 10px 30px -15px rgba(230,24,124,0.4)",
+        dew: "0 8px 32px -8px rgba(0,0,0,0.12), 0 2px 8px -2px rgba(0,0,0,0.06)",
         glass:
-          "inset 0 1px 0 0 rgba(255,255,255,0.9), 0 24px 60px -28px rgba(34,30,82,0.32)",
+          "inset 0 1px 0 0 rgba(255,255,255,0.9), 0 4px 20px -4px rgba(0,0,0,0.08)",
       },
       keyframes: {
         "fade-scale": {

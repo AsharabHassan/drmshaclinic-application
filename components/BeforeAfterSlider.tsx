@@ -52,8 +52,8 @@ export default function BeforeAfterSlider({
           Before
         </span>
       </div>
-      <span className="absolute right-3 top-3 rounded-full border border-white/40 bg-gradient-to-r from-serum to-amber px-3 py-1 text-[0.6rem] uppercase tracking-[0.2em] text-white shadow-dew">
-        Veluria
+      <span className="absolute right-3 top-3 rounded-full border border-white/40 bg-plum px-3 py-1 text-[0.6rem] uppercase tracking-[0.2em] text-white shadow-sm">
+        After
       </span>
 
       {/* Handle */}
@@ -66,7 +66,7 @@ export default function BeforeAfterSlider({
           aria-label="Drag to compare"
           onMouseDown={() => (dragging.current = true)}
           onTouchStart={() => (dragging.current = true)}
-          className="absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize items-center justify-center rounded-full border border-white/80 bg-gradient-to-br from-serum to-amber text-white shadow-dew"
+          className="absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize items-center justify-center rounded-full border border-white/80 bg-plum text-white shadow-dew"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
             <path d="M9 7l-5 5 5 5M15 7l5 5-5 5" />

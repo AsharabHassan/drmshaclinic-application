@@ -94,7 +94,7 @@ export default function LeadForm({
             Where shall we send your results?
           </h2>
           <p className="mt-2 text-sm text-plum-soft">
-            Your full analysis, treatment map and Veluria preview unlock the moment
+            Your full analysis, treatment map and personalised preview unlock the moment
             you continue.
           </p>
         </div>
@@ -140,8 +140,8 @@ export default function LeadForm({
                   onClick={() => toggleGoal(g)}
                   className={`rounded-full border px-4 py-2 text-sm transition ${
                     active
-                      ? "border-transparent bg-gradient-to-r from-serum to-amber text-white shadow-dew"
-                      : "border-white/80 bg-white/50 text-plum-soft hover:border-serum/50"
+                      ? "border-transparent bg-plum text-white shadow-sm"
+                      : "border-[#E0E0E0] bg-white/70 text-plum-soft hover:border-plum/40"
                   }`}
                 >
                   {g}
@@ -156,17 +156,17 @@ export default function LeadForm({
             type="checkbox"
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
-            className="mt-0.5 h-4 w-4 accent-serum"
+            className="mt-0.5 h-4 w-4 accent-plum"
             required
           />
           <span>
-            I consent to Sirona Aesthetics using my photo to generate this
-            analysis and contacting me about treatments. My photo is processed to
-            create the result and is not stored.
+            I consent to Dr.M.Sha Wellness &amp; Aesthetics Clinic using my photo
+            to generate this analysis and contacting me about treatments. My photo
+            is processed to create the result and is not stored.
           </span>
         </label>
 
-        {error && <p className="text-sm text-serum">{error}</p>}
+        {error && <p className="text-sm text-red-600">{error}</p>}
 
         <button type="submit" className="btn-serum w-full" disabled={submitting}>
           {submitting ? "Unlocking…" : "Reveal my results"}

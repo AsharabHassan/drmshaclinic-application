@@ -5,7 +5,6 @@ import SelfieCapture from "@/components/SelfieCapture";
 import LeadForm from "@/components/LeadForm";
 import Processing from "@/components/Processing";
 import AnalysisReport from "@/components/AnalysisReport";
-import CinematicAtmosphere from "@/components/CinematicAtmosphere";
 import type { SkinAnalysis, LeadPayload } from "@/lib/types";
 import type { GhlMeta } from "@/lib/ghl";
 
@@ -36,9 +35,6 @@ export default function Home() {
     setStep("welcome");
   };
 
-  // Fetch one "after" pass at a given quality, optionally targeting the flagged
-  // concern areas (so it treats real issues) and optionally baking in the
-  // treatment-map pointers (so the one image serves the slider AND the map).
   const fetchAfter = (
     image: string,
     quality: "low" | "medium",
@@ -56,9 +52,6 @@ export default function Home() {
       })
       .catch(() => null);
 
-  // Runs only after the lead has been captured + pushed to GHL. `leadData` is
-  // passed on the first call (state hasn't settled yet); the error-screen Retry
-  // calls without it and falls back to the stored lead.
   const runAnalysis = async (
     image: string,
     leadData?: LeadPayload | null,
@@ -72,9 +65,6 @@ export default function Home() {
     setAfterPending(true);
     setMapPending(true);
 
-    // STEP 1 — Claude vision analyses the selfie FIRST. Its findings drive both
-    // the written report and the before/after image, so nothing is generated
-    // until we know this person's actual concerns.
     let analysisResult: SkinAnalysis;
     try {
       const r = await fetch("/api/analyze", {
@@ -86,8 +76,6 @@ export default function Home() {
       if (!r.ok) throw new Error(data.error ?? "Analysis failed.");
       analysisResult = data.analysis as SkinAnalysis;
       setAnalysis(analysisResult);
-      // Report appears now (scores, notes, recommendation); the before/after
-      // and map areas show their loader while the image is generated.
       setStep("result");
     } catch (err) {
       setErrorMsg(
@@ -97,10 +85,6 @@ export default function Home() {
       return;
     }
 
-    // PHASE 2 of lead capture — now that we have the analysis, push the FULL
-    // lead (same fields as the first webhook) plus the concerns to GHL, keyed by
-    // email so the existing contact is enriched. Fire-and-forget: a failure here
-    // never blocks the results reveal.
     if (activeLead) {
       fetch("/api/lead/concerns", {
         method: "POST",
@@ -113,11 +97,6 @@ export default function Home() {
       }).catch(() => {});
     }
 
-    // STEP 2 — fire the before/after and the treatment map in parallel so both
-    // resolve as fast as possible. Each call has one job: the transform does a
-    // clean skin retouch (no annotation overhead); the map route draws the
-    // clinical overlay on the original photo. Splitting these roughly halves the
-    // visible wait compared to a single annotated call.
     const concerns =
       analysisResult.annotations?.map((a) => ({
         area: a.area,
@@ -130,13 +109,11 @@ export default function Home() {
         severity: a.severity,
       })) ?? [];
 
-    // Before/after slider — clean retouch, no annotation baked in.
     fetchAfter(image, "medium", concerns, false).then((afterImg) => {
       if (afterImg) setAfterImage(afterImg);
       setAfterPending(false);
     });
 
-    // Treatment map — clinical overlay on the original photo.
     fetch("/api/map", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -153,24 +130,19 @@ export default function Home() {
       });
   };
 
-  const atmosphereScene =
-    step === "processing" ? "processing" : step === "result" ? "report" : "welcome";
-
   return (
     <main className="relative min-h-dvh">
-      <CinematicAtmosphere scene={atmosphereScene} />
-
       <header className="relative z-10">
-        <div className="mx-auto flex max-w-5xl flex-col items-center justify-center gap-2 px-6 pt-8">
+        <div className="mx-auto flex max-w-5xl flex-col items-center justify-center gap-1 px-6 pt-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/sirona-logo.png"
-            alt="Sirona Aesthetics"
-            className="h-11 w-auto"
+            src="/drsha-logo.jpg"
+            alt="Dr.M.Sha Wellness and Aesthetics Clinic"
+            className="h-14 w-auto"
             draggable={false}
           />
-          <p className="text-[0.6rem] uppercase tracking-couture text-serum">
-            Veluria Skin Studio
+          <p className="text-[0.6rem] uppercase tracking-couture text-plum-mute">
+            AI Skin Consultation
           </p>
         </div>
       </header>
@@ -187,16 +159,15 @@ export default function Home() {
             >
               Reveal the skin
               <br />
-              <span className="serum-text italic">beneath the surface.</span>
+              <span className="serum-text italic">you deserve.</span>
             </h1>
             <p
               className="mx-auto mt-7 max-w-md animate-fade-scale text-balance text-plum-soft"
               style={{ animationDelay: "240ms" }}
             >
-              One photograph. A consultant-grade analysis, a professional treatment
-              map of your face, and a luminous preview of your results with{" "}
-              <span className="font-medium text-plum">Veluria Silk Skin</span> by PB
-              Serum.
+              One photograph. A doctor-grade skin analysis, a professional
+              treatment map, and a personalised preview of your results — from{" "}
+              <span className="font-medium text-plum">Dr.M.Sha Wellness &amp; Aesthetics Clinic</span>.
             </p>
             <div
               className="mt-10 flex animate-fade-scale flex-col items-center gap-4"
@@ -220,7 +191,7 @@ export default function Home() {
                 ["03", "Before / after"],
               ].map(([n, label]) => (
                 <div key={n} className="glass-soft px-4 py-5 text-center">
-                  <p className="font-display text-2xl text-serum">{n}</p>
+                  <p className="font-display text-2xl text-plum-mute">{n}</p>
                   <p className="mt-1 text-[0.65rem] uppercase tracking-[0.14em] text-plum-soft">
                     {label}
                   </p>
@@ -296,7 +267,7 @@ export default function Home() {
       </div>
 
       <footer className={`relative z-10 mx-auto max-w-5xl px-6 text-center text-[0.65rem] uppercase tracking-[0.14em] text-plum-mute/70 ${step === "result" ? "pb-24" : "pb-10"}`}>
-        © {new Date().getFullYear()} Sirona Aesthetics · Veluria by PB Serum · A
+        © {new Date().getFullYear()} Dr.M.Sha Wellness &amp; Aesthetics Clinic · A
         cosmetic, non-diagnostic AI simulation · Not medical advice
       </footer>
     </main>

@@ -27,17 +27,17 @@ function MapLoader({ image }: { image: string }) {
         alt="Your photo"
         className="h-full w-full object-cover blur-md brightness-95"
       />
-      <div className="absolute inset-x-0 top-0 h-px animate-sheen bg-gradient-to-r from-transparent via-serum to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-plum/20 to-transparent" />
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-white/30 px-8 text-center backdrop-blur-sm">
         <div className="relative h-14 w-14">
           <div className="absolute inset-0 rounded-full border border-plum/15" />
-          <div className="absolute inset-0 animate-[spin_3s_linear_infinite] rounded-full border-2 border-transparent border-t-serum" />
+          <div className="absolute inset-0 animate-[spin_3s_linear_infinite] rounded-full border-2 border-transparent border-t-plum" />
         </div>
         <p className="text-sm tracking-wide text-plum">{step}</p>
         <div className="w-full max-w-xs">
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/70">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-serum to-amber transition-all duration-1000 ease-out"
+              className="h-full rounded-full bg-plum transition-all duration-1000 ease-out"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -52,7 +52,7 @@ function MapLoader({ image }: { image: string }) {
 
 const SEVERITY_DOT: Record<FaceAnnotation["severity"], string> = {
   low: "bg-[#5bb98b]",
-  moderate: "bg-serum",
+  moderate: "bg-[#6B9FA4]",
   notable: "bg-[#e0556f]",
 };
 
@@ -118,7 +118,7 @@ export default function AnnotatedFace({
                   onClick={() => setActive(isActive ? null : i)}
                   style={{ left: `${clampPct(a.x)}%`, top: `${clampPct(a.y)}%` }}
                   className={`absolute flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-xs font-semibold text-white shadow-lg ring-2 ring-white/90 transition ${
-                    SEVERITY_DOT[a.severity] ?? "bg-serum"
+                    SEVERITY_DOT[a.severity] ?? "bg-[#6B9FA4]"
                   } ${isActive ? "z-10 scale-125" : "hover:scale-110"}`}
                   aria-label={`${i + 1}. ${a.area}`}
                 >
@@ -140,13 +140,13 @@ export default function AnnotatedFace({
               onMouseLeave={() => setActive(null)}
               className={`flex gap-3 rounded-2xl border p-3 transition ${
                 isActive
-                  ? "border-serum/50 bg-white/70"
+                  ? "border-plum/30 bg-white/80"
                   : "border-white/60 bg-white/40"
               }`}
             >
               <span
                 className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ${
-                  SEVERITY_DOT[a.severity] ?? "bg-serum"
+                  SEVERITY_DOT[a.severity] ?? "bg-[#6B9FA4]"
                 }`}
               >
                 {i + 1}
@@ -159,7 +159,7 @@ export default function AnnotatedFace({
                   </span>
                 </p>
                 <p className="text-plum-soft">{a.concern}</p>
-                <p className="mt-1 text-xs font-medium text-serum">
+                <p className="mt-1 text-xs font-medium text-[#3a7a80]">
                   Suggested: {a.treatment}
                 </p>
               </div>

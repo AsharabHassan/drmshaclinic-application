@@ -89,8 +89,8 @@ export async function composeBeforeAfter(
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(PANEL - 3, 0, 6, H);
 
-  drawPill(ctx, "BEFORE", 32, 32, "rgba(255,255,255,0.9)", "#211e52");
-  drawPill(ctx, "AFTER", PANEL + 32, 32, "#16b3c6", "#ffffff");
+  drawPill(ctx, "BEFORE", 32, 32, "rgba(255,255,255,0.9)", "#212121");
+  drawPill(ctx, "AFTER", PANEL + 32, 32, "#212121", "#ffffff");
 
   return canvas.toDataURL("image/png");
 }
@@ -143,15 +143,15 @@ export async function downloadAnalysisPdf(opts: {
   // Header
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
-  doc.setTextColor(33, 30, 82);
-  doc.text("SIRONA AESTHETICS", margin, y);
+  doc.setTextColor(33, 33, 33);
+  doc.text("DR.M.SHA WELLNESS & AESTHETICS CLINIC", margin, y);
   y += 16;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.setTextColor(22, 179, 198);
-  doc.text("Veluria Skin Analysis · by PB Serum", margin, y);
+  doc.setTextColor(107, 159, 164);
+  doc.text("AI Skin Consultation · drmshaclinic.com", margin, y);
   y += 16;
-  doc.setDrawColor(22, 179, 198);
+  doc.setDrawColor(180, 180, 180);
   doc.line(margin, y, pageW - margin, y);
   y += 22;
 
@@ -164,13 +164,13 @@ export async function downloadAnalysisPdf(opts: {
     ensure(34);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
-    doc.setTextColor(60, 55, 45);
+    doc.setTextColor(33, 33, 33);
     doc.text(c.label, margin, y);
     doc.text(`${c.score}/100`, pageW - margin - 44, y);
     const barY = y + 4;
-    doc.setFillColor(235, 230, 210);
+    doc.setFillColor(232, 232, 232);
     doc.rect(margin, barY, cw, 5, "F");
-    doc.setFillColor(22, 179, 198);
+    doc.setFillColor(33, 33, 33);
     doc.rect(margin, barY, (cw * Math.max(0, Math.min(100, c.score))) / 100, 5, "F");
     y += 18;
     doc.setFontSize(9);
@@ -184,7 +184,7 @@ export async function downloadAnalysisPdf(opts: {
 
   // Before/after — labelled side-by-side composite (2:1).
   if (beforeAfter) {
-    heading("Before & After — your Veluria preview");
+    heading("Before & After — your treatment preview");
     const h = cw * 0.5;
     ensure(h + 4);
     doc.addImage(beforeAfter, "PNG", margin, y, cw, h);
@@ -200,7 +200,7 @@ export async function downloadAnalysisPdf(opts: {
     y += size + 16;
   }
 
-  heading("How Veluria could help");
+  heading("How Dr Sha can help");
   body(analysis.veluriaRecommendation);
 
   ensure(30);
@@ -211,5 +211,5 @@ export async function downloadAnalysisPdf(opts: {
   ensure(dis.length * 10);
   doc.text(dis, margin, y);
 
-  doc.save("Sirona-Aesthetics-Veluria-Skin-Analysis.pdf");
+  doc.save("DrMSha-Skin-Consultation.pdf");
 }

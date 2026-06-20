@@ -154,7 +154,7 @@ export default function SelfieCapture({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.4"
-                className="text-serum"
+                className="text-plum"
               >
                 <path d="M3 7h3l2-2h8l2 2h3v12H3z" />
                 <circle cx="12" cy="13" r="3.5" />
@@ -188,7 +188,7 @@ export default function SelfieCapture({
           />
         </div>
       )}
-      {error && <p className="mt-4 text-center text-sm text-serum">{error}</p>}
+      {error && <p className="mt-4 text-center text-sm text-red-600">{error}</p>}
     </div>
   );
 }

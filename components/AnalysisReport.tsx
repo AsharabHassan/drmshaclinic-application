@@ -14,11 +14,11 @@ import {
 } from "@/lib/download";
 
 const BOOKING_URL =
-  process.env.NEXT_PUBLIC_BOOKING_URL ?? "https://sironaaesthetics.co.uk";
+  process.env.NEXT_PUBLIC_BOOKING_URL ?? "https://drmshaclinic.com";
 
 const PREVIEW_STEPS = [
   "Reading your skin map…",
-  "Applying a realistic Veluria outcome…",
+  "Applying a realistic treatment outcome…",
   "Refining tone, texture & hydration…",
   "Finishing your before & after…",
 ];
@@ -41,17 +41,17 @@ function PreviewLoader({ before }: { before: string }) {
         alt="Your photo"
         className="h-full w-full scale-105 object-cover blur-md brightness-95"
       />
-      <div className="absolute inset-x-0 top-0 h-px animate-sheen bg-gradient-to-r from-transparent via-serum to-transparent" />
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-white/30 px-8 text-center backdrop-blur-sm">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-plum-mute/40 to-transparent" />
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-white/40 px-8 text-center backdrop-blur-sm">
         <div className="relative h-14 w-14">
           <div className="absolute inset-0 rounded-full border border-plum/15" />
-          <div className="absolute inset-0 animate-[spin_3s_linear_infinite] rounded-full border-2 border-transparent border-t-serum" />
+          <div className="absolute inset-0 animate-[spin_3s_linear_infinite] rounded-full border-2 border-transparent border-t-plum" />
         </div>
         <p className="text-sm tracking-wide text-plum">{step}</p>
         <div className="w-full max-w-xs">
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/70">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-serum to-amber transition-all duration-1000 ease-out"
+              className="h-full rounded-full bg-plum transition-all duration-1000 ease-out"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -66,9 +66,9 @@ function PreviewLoader({ before }: { before: string }) {
 
 function ScoreBar({ score }: { score: number }) {
   return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/70">
+    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#E8E8E8]">
       <div
-        className="h-full rounded-full bg-gradient-to-r from-[#0e7d8c] via-serum to-amber transition-all duration-700"
+        className="h-full rounded-full bg-plum transition-all duration-700"
         style={{ width: `${Math.max(0, Math.min(100, score))}%` }}
       />
     </div>
@@ -86,7 +86,7 @@ function SectionHead({
 }) {
   return (
     <div className="mb-6 flex items-end gap-4">
-      <span className="font-display text-4xl leading-none text-serum/40">{index}</span>
+      <span className="font-display text-4xl leading-none text-plum-mute/60">{index}</span>
       <div>
         <p className="eyebrow">{eyebrow}</p>
         <h3 className="display text-2xl text-plum sm:text-3xl">{title}</h3>
@@ -128,19 +128,19 @@ function StickyPreviewBar({
       <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-white/70 bg-white/80 px-5 py-3 backdrop-blur-xl shadow-[0_8px_32px_-10px_rgba(34,30,82,0.35)]">
         {afterPending ? (
           <>
-            <span className="h-4 w-4 shrink-0 animate-[spin_1.5s_linear_infinite] rounded-full border-2 border-plum/20 border-t-serum" />
+            <span className="h-4 w-4 shrink-0 animate-[spin_1.5s_linear_infinite] rounded-full border-2 border-plum/20 border-t-plum" />
             <span className="text-sm text-plum">Generating your before &amp; after…</span>
           </>
         ) : after ? (
           <>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 text-serum">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 text-plum">
               <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
               <path d="M5 8.5l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <span className="text-sm font-medium text-plum">Your before &amp; after is ready</span>
             <button
               onClick={scrollToPreview}
-              className="ml-1 rounded-full bg-gradient-to-r from-serum to-amber px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition hover:opacity-90"
+              className="ml-1 rounded-full bg-plum px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition hover:bg-plum-soft"
             >
               View ↑
             </button>
@@ -189,7 +189,7 @@ export default function AnalysisReport({
   const handleDownloadBeforeAfter = async () => {
     if (!after) return;
     const composite = await composeBeforeAfter(before, after);
-    downloadDataUrl(composite, "veluria-before-after.png");
+    downloadDataUrl(composite, "drsha-before-after.png");
   };
 
   return (
@@ -197,31 +197,15 @@ export default function AnalysisReport({
       <div className="text-center animate-fade-scale">
         <p className="eyebrow">Your Consultation</p>
         <h2 className="display mt-4 text-4xl text-plum sm:text-6xl">
-          The skin you&rsquo;re <span className="serum-text italic">meant to have</span>
+          Your skin, <span className="serum-text italic">at its best.</span>
         </h2>
       </div>
 
       {/* Before / After */}
       <section ref={previewRef} className="animate-fade-scale" style={{ animationDelay: "80ms" }}>
-        <SectionHead index="01" eyebrow="Before & After" title="Your Veluria preview" />
+        <SectionHead index="01" eyebrow="Before & After" title="Your treatment preview" />
         {after ? (
           <div className="relative liquid-reveal">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/assets/cinematic/leader-lines-left.png"
-              alt=""
-              aria-hidden="true"
-              className="pointer-events-none absolute -left-28 top-8 z-10 hidden h-3/4 w-1/2 object-contain opacity-25 mix-blend-screen sm:block"
-              draggable={false}
-            />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/assets/cinematic/leader-lines-right.png"
-              alt=""
-              aria-hidden="true"
-              className="pointer-events-none absolute -right-28 top-8 z-10 hidden h-3/4 w-1/2 object-contain opacity-25 mix-blend-screen sm:block"
-              draggable={false}
-            />
             <div className="relative z-0 animate-reveal-blur">
               <AfterCallouts
                 annotations={analysis.annotations}
@@ -255,18 +239,10 @@ export default function AnalysisReport({
         <section className="animate-fade-scale" style={{ animationDelay: "120ms" }}>
           <SectionHead
             index="02"
-            eyebrow="Where Veluria Works"
+            eyebrow="Where Treatment Works"
             title="Your treatment map"
           />
           <div className="relative">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/assets/cinematic/face-zone-hairline.png"
-              alt=""
-              aria-hidden="true"
-              className="pointer-events-none absolute -left-16 -top-20 hidden h-80 w-80 object-contain opacity-20 mix-blend-screen sm:block"
-              draggable={false}
-            />
             <AnnotatedFace
               image={after ?? before}
               annotations={analysis.annotations}
@@ -276,9 +252,9 @@ export default function AnalysisReport({
             />
           </div>
           <p className="mt-4 text-center text-xs italic text-plum-mute">
-            Markers show the areas Veluria targets, drawn on your simulated
+            Markers show areas identified for treatment, drawn on your simulated
             result. AI-estimated for guidance only — not a clinical diagnosis.
-            A consultation confirms the right plan for you.
+            A consultation with Dr Sha confirms the right plan for you.
           </p>
         </section>
       )}
@@ -296,13 +272,13 @@ export default function AnalysisReport({
                 <div key={c.label}>
                   <div className="mb-1.5 flex items-baseline justify-between">
                     <span className="text-sm font-medium text-plum">{c.label}</span>
-                    <span className="font-display text-lg text-serum">{c.score}</span>
+                    <span className="font-display text-lg text-plum">{c.score}</span>
                   </div>
                   <ScoreBar score={c.score} />
                   <div className="mt-1.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                     <p className="text-xs text-plum-soft">{c.note}</p>
                     {expected && (
-                      <span className="whitespace-nowrap rounded-full bg-serum/10 px-2.5 py-0.5 text-[0.7rem] font-medium text-[#0e7d8c]">
+                      <span className="whitespace-nowrap rounded-full bg-[#E1EFF0] px-2.5 py-0.5 text-[0.7rem] font-medium text-[#3a7a80]">
                         {expected.kind === "softened"
                           ? `Lines ${expected.label}`
                           : `Expected ${expected.label}`}
@@ -316,12 +292,11 @@ export default function AnalysisReport({
         </div>
       </section>
 
-      {/* Veluria recommendation */}
+      {/* Dr Sha recommendation */}
       <section className="animate-fade-scale" style={{ animationDelay: "200ms" }}>
-        <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-gradient-to-br from-peach/60 via-rose/40 to-amber/40 p-8 shadow-dew sm:p-10">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 animate-blob-morph bg-white/40 blur-2xl" />
+        <div className="relative overflow-hidden rounded-[2rem] border border-[#E8E8E8] bg-pearl-deep p-8 sm:p-10">
           <p className="eyebrow">The Recommendation</p>
-          <h3 className="display mt-3 text-3xl text-plum">How Veluria could help</h3>
+          <h3 className="display mt-3 text-3xl text-plum">How Dr Sha can help</h3>
           <p className="mt-4 leading-relaxed text-plum">
             {analysis.veluriaRecommendation}
           </p>
@@ -399,7 +374,7 @@ export default function AnalysisReport({
                     lightbox,
                     lightbox === mapImage
                       ? "skin-assessment-map.png"
-                      : "veluria-before-after.png",
+                      : "drsha-before-after.png",
                   )
                 }
                 className="btn-serum"

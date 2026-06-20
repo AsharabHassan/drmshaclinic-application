@@ -6,7 +6,7 @@ const STEPS = [
   "Mapping your facial landmarks...",
   "Assessing hydration, texture & tone...",
   "Composing your treatment map...",
-  "Rendering your Veluria preview...",
+  "Rendering your treatment preview...",
 ];
 
 const LANDMARKS = [
@@ -35,9 +35,9 @@ function FaceMapLoader() {
         }}
         draggable={false}
       />
-      <div className="absolute inset-0 rounded-full border border-serum/25 shadow-dew" />
+      <div className="absolute inset-0 rounded-full border border-plum/15" />
       <div className="absolute inset-4 rounded-full border border-white/80" />
-      <div className="absolute inset-8 rounded-full border border-serum/15" />
+      <div className="absolute inset-8 rounded-full border border-plum/10" />
 
       <div className="relative h-[15.5rem] w-[15.5rem] overflow-hidden rounded-[2rem] border border-white/80 bg-white/45 shadow-glass backdrop-blur-md sm:h-[17rem] sm:w-[17rem]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -78,7 +78,7 @@ function FaceMapLoader() {
           draggable={false}
         />
         <div className="absolute inset-x-0 top-0 h-1/2 animate-face-scan bg-gradient-to-b from-transparent via-white/55 to-transparent">
-          <div className="absolute left-0 right-0 top-1/2 h-px bg-gradient-to-r from-transparent via-serum to-transparent shadow-[0_0_18px_rgba(22,179,198,0.75)]" />
+          <div className="absolute left-0 right-0 top-1/2 h-px bg-gradient-to-r from-transparent via-plum/40 to-transparent" />
         </div>
 
         <svg
@@ -139,11 +139,11 @@ function FaceMapLoader() {
         {LANDMARKS.map((point, index) => (
           <span
             key={`${point.x}-${point.y}`}
-            className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/90 bg-serum/90 shadow-[0_0_18px_rgba(22,179,198,0.7)]"
+            className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/90 bg-plum/80"
             style={{ left: `${point.x}%`, top: `${point.y}%` }}
           >
             <span
-              className="absolute inset-0 animate-map-pulse rounded-full border border-serum/70"
+              className="absolute inset-0 animate-map-pulse rounded-full border border-plum/40"
               style={{ animationDelay: point.delay }}
             />
             <span className="sr-only">Assessment point {index + 1}</span>
@@ -174,8 +174,8 @@ export default function Processing() {
         {STEPS[step]}
       </p>
 
-      <div className="relative mt-8 h-1 w-56 overflow-hidden rounded-full bg-white/60">
-        <div className="absolute inset-y-0 w-1/3 animate-sheen rounded-full bg-gradient-to-r from-transparent via-serum to-transparent" />
+      <div className="relative mt-8 h-px w-56 overflow-hidden rounded-full bg-[#E8E8E8]">
+        <div className="absolute inset-y-0 w-1/3 animate-sheen rounded-full bg-gradient-to-r from-transparent via-plum/30 to-transparent" />
       </div>
       <p className="mt-5 max-w-[17rem] text-balance text-[0.65rem] uppercase leading-relaxed tracking-[0.14em] text-plum-mute">
         Map and preview render together
