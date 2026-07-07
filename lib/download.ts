@@ -1,4 +1,5 @@
 import type { SkinAnalysis } from "./types";
+import { expectedImprovement } from "./expectations";
 
 /**
  * Trigger a browser download of a data URL (e.g. a generated PNG). Large
@@ -198,6 +199,27 @@ export async function downloadAnalysisPdf(opts: {
   heading("Your Skin Consultation", 18);
   body(analysis.summary);
 
+  // Draws a small rounded "pill" badge and returns its width, so the PDF
+  // report carries the same Expected / consult flags the web report shows.
+  const pill = (
+    text: string,
+    px: number,
+    py: number,
+    bg: [number, number, number],
+    fg: [number, number, number],
+  ): number => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    const padX = 6;
+    const h = 13;
+    const w = doc.getTextWidth(text) + padX * 2;
+    doc.setFillColor(...bg);
+    doc.roundedRect(px, py, w, h, h / 2, h / 2, "F");
+    doc.setTextColor(...fg);
+    doc.text(text, px + padX, py + h / 2 + 2.6);
+    return w;
+  };
+
   // Scores
   heading("Skin scores");
   analysis.categories.forEach((c) => {
@@ -215,10 +237,33 @@ export async function downloadAnalysisPdf(opts: {
     y += 18;
     doc.setFontSize(9);
     doc.setTextColor(120, 110, 90);
-    const note = doc.splitTextToSize(c.note, cw) as string[];
-    ensure(note.length * 11);
-    doc.text(note, margin, y);
-    y += note.length * 11 + 8;
+    // Expectation / out-of-scope flag — mirrors the web report exactly.
+    const expected = expectedImprovement(c);
+    // Reserve room on the note's first line for a right-aligned pill so the
+    // badge sits beside its own note (same layout as the web report) rather
+    // than floating between two categories.
+    const noteWidth = expected ? cw - 150 : cw;
+    const note = doc.splitTextToSize(c.note, noteWidth) as string[];
+    ensure(note.length * 11 + 6);
+    const noteY = y;
+    doc.text(note, margin, noteY);
+    if (expected) {
+      const label =
+        expected.kind === "consult"
+          ? expected.label
+          : expected.kind === "softened"
+            ? `Lines ${expected.label}`
+            : `Expected ${expected.label}`;
+      const [bg, fg]: [[number, number, number], [number, number, number]] =
+        expected.kind === "consult"
+          ? [[247, 236, 219], [150, 101, 42]]
+          : [[225, 239, 240], [58, 122, 128]];
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      const w = doc.getTextWidth(label) + 12;
+      pill(label, pageW - margin - w, noteY - 9.5, bg, fg);
+    }
+    y += note.length * 11 + 12;
   });
   y += 4;
 
