@@ -285,6 +285,86 @@ export async function downloadAnalysisPdf(opts: {
     y += size + 16;
   }
 
+  // Treatment-map breakdown — the per-area list the web report shows beside
+  // the map (area, severity, concern, and the honest "Suggested:" note that
+  // carries the out-of-scope consultation flag).
+  if (analysis.annotations?.length) {
+    const SEV_DOT: Record<string, [number, number, number]> = {
+      low: [91, 185, 139],
+      moderate: [107, 159, 164],
+      notable: [224, 85, 111],
+    };
+    const SEV_LABEL: Record<string, string> = {
+      low: "Minor",
+      moderate: "Moderate",
+      notable: "Notable",
+    };
+    heading("Where treatment works");
+    const listX = margin + 22;
+    const listW = cw - 22;
+    analysis.annotations.forEach((a, i) => {
+      // Pre-measure so the whole row (badge + text) never splits across pages.
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      const areaLines = doc.splitTextToSize(a.area, listW - 60) as string[];
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      const concernLines = doc.splitTextToSize(a.concern, listW) as string[];
+      doc.setFontSize(8.5);
+      const sugLines = doc.splitTextToSize(
+        `Suggested: ${a.treatment}`,
+        listW,
+      ) as string[];
+      const rowH =
+        areaLines.length * 12 +
+        concernLines.length * 10 +
+        sugLines.length * 10 +
+        14;
+      ensure(rowH);
+
+      const rowTop = y;
+      // Severity number badge.
+      const [br, bg2, bb] = SEV_DOT[a.severity] ?? SEV_DOT.moderate;
+      doc.setFillColor(br, bg2, bb);
+      doc.circle(margin + 7, rowTop + 4, 7, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(255, 255, 255);
+      doc.text(String(i + 1), margin + 7, rowTop + 6.6, { align: "center" });
+
+      // Area + severity label.
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(33, 29, 22);
+      doc.text(areaLines, listX, rowTop + 6);
+      const areaW = doc.getTextWidth(areaLines[areaLines.length - 1] ?? a.area);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(150, 145, 130);
+      doc.text(
+        (SEV_LABEL[a.severity] ?? "").toUpperCase(),
+        listX + areaW + 6,
+        rowTop + 5.5,
+      );
+      y = rowTop + areaLines.length * 12 + 3;
+
+      // Concern.
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(90, 84, 72);
+      doc.text(concernLines, listX, y);
+      y += concernLines.length * 10 + 2;
+
+      // Suggested — teal like the web map (out-of-scope wording lives in text).
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(58, 122, 128);
+      doc.text(sugLines, listX, y);
+      y += sugLines.length * 10 + 10;
+    });
+    y += 4;
+  }
+
   heading("How Dr Sha can help");
   body(analysis.veluriaRecommendation);
 
