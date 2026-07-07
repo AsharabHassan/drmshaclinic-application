@@ -251,6 +251,8 @@ export default function Home() {
             mapImage={mapImage}
             mapPending={mapPending}
             analysis={analysis}
+            email={lead?.email ?? null}
+            name={lead?.name ?? null}
             onRestart={reset}
           />
         )}
