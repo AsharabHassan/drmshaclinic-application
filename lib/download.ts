@@ -134,16 +134,19 @@ export async function composeBeforeAfter(
   return canvas.toDataURL("image/jpeg", 0.85);
 }
 
-/**
- * Build and download a branded PDF of the full analysis. jsPDF is imported
- * dynamically so it stays out of the initial bundle.
- */
-export async function downloadAnalysisPdf(opts: {
+export interface PdfOpts {
   analysis: SkinAnalysis;
   before: string;
   after: string | null;
   map: string | null;
-}): Promise<void> {
+}
+
+/**
+ * Build the branded jsPDF document (no side effect). jsPDF is imported
+ * dynamically so it stays out of the initial bundle. Both the download path
+ * and the server-upload path reuse this.
+ */
+async function buildAnalysisPdfDoc(opts: PdfOpts) {
   const { analysis, before, after, map } = opts;
   // Build the labelled side-by-side before/after (real selfie + generated after).
   const beforeAfter = after ? await composeBeforeAfter(before, after) : null;
@@ -403,6 +406,12 @@ export async function downloadAnalysisPdf(opts: {
   // Repeat the prominent disclaimer at the end of the report.
   disclaimerBox();
 
+  return doc;
+}
+
+/** Build and download the report PDF (browser download). */
+export async function downloadAnalysisPdf(opts: PdfOpts): Promise<void> {
+  const doc = await buildAnalysisPdfDoc(opts);
   try {
     doc.save("DrMSha-Skin-Consultation.pdf");
   } catch {
@@ -410,4 +419,10 @@ export async function downloadAnalysisPdf(opts: {
     // PDF in a new tab lets the user view and share it instead.
     window.open(doc.output("bloburl"), "_blank");
   }
+}
+
+/** Base64 (no data-URL prefix) of the report PDF — for server-side upload. */
+export async function buildAnalysisPdfBase64(opts: PdfOpts): Promise<string> {
+  const doc = await buildAnalysisPdfDoc(opts);
+  return doc.output("datauristring").split(",")[1] ?? "";
 }
