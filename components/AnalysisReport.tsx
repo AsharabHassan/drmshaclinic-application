@@ -10,6 +10,7 @@ import ReviewsSlider from "./ReviewsSlider";
 import CaseStudy from "./CaseStudy";
 import VeluriaRejuvenation from "./VeluriaRejuvenation";
 import { expectedImprovement } from "@/lib/expectations";
+import { DISCLAIMER_FULL } from "@/lib/legal";
 import {
   composeBeforeAfter,
   downloadAnalysisPdf,
@@ -243,6 +244,25 @@ export default function AnalysisReport({
         </h2>
       </div>
 
+      {/* Prominent disclaimer at the TOP of the results, not just the footer. */}
+      <div className="flex items-start gap-3 rounded-2xl border border-amber-300/70 bg-amber-50/80 p-4 text-left animate-fade-scale">
+        <svg
+          viewBox="0 0 24 24"
+          className="mt-0.5 h-5 w-5 shrink-0 text-amber-600"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
+        </svg>
+        <p className="text-xs font-medium leading-relaxed text-amber-900">
+          {DISCLAIMER_FULL}
+        </p>
+      </div>
+
       {/* Before / After */}
       <section ref={previewRef} className="animate-fade-scale" style={{ animationDelay: "80ms" }}>
         <SectionHead index="01" eyebrow="Before & After" title="Your treatment preview" />
@@ -433,9 +453,14 @@ export default function AnalysisReport({
         >
           Start over
         </button>
-        <p className="mx-auto mt-8 max-w-md text-[0.7rem] leading-relaxed text-plum-mute">
-          {analysis.disclaimer}
-        </p>
+        <div className="mx-auto mt-8 max-w-lg rounded-2xl border border-amber-300/70 bg-amber-50/80 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">
+            Important
+          </p>
+          <p className="mt-1.5 text-xs leading-relaxed text-amber-900">
+            {DISCLAIMER_FULL}
+          </p>
+        </div>
       </section>
 
       {/* Full-size image lightbox */}

@@ -1,5 +1,6 @@
 import type { SkinAnalysis } from "./types";
 import { expectedImprovement } from "./expectations";
+import { DISCLAIMER_FULL } from "./legal";
 
 /**
  * Trigger a browser download of a data URL (e.g. a generated PNG). Large
@@ -180,6 +181,34 @@ export async function downloadAnalysisPdf(opts: {
     doc.text(lines, margin, y);
     y += lines.length * (size + 3) + 8;
   };
+  // Prominent amber-tinted disclaimer box — matches the on-screen notices.
+  const disclaimerBox = () => {
+    const padX = 10;
+    const padY = 9;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    const heading = "IMPORTANT — PLEASE READ";
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    const lines = doc.splitTextToSize(
+      DISCLAIMER_FULL,
+      cw - padX * 2,
+    ) as string[];
+    const boxH = padY * 2 + 12 + lines.length * 11;
+    ensure(boxH + 6);
+    doc.setDrawColor(214, 158, 46);
+    doc.setFillColor(252, 246, 232);
+    doc.roundedRect(margin, y, cw, boxH, 6, 6, "FD");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(150, 101, 42);
+    doc.text(heading, margin + padX, y + padY + 6);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(90, 62, 20);
+    doc.text(lines, margin + padX, y + padY + 18);
+    y += boxH + 12;
+  };
 
   // Header
   doc.setFont("helvetica", "bold");
@@ -198,6 +227,9 @@ export async function downloadAnalysisPdf(opts: {
 
   heading("Your Skin Consultation", 18);
   body(analysis.summary);
+
+  // Prominent disclaimer near the top so it's seen before the scores/preview.
+  disclaimerBox();
 
   // Draws a small rounded "pill" badge and returns its width, so the PDF
   // report carries the same Expected / consult flags the web report shows.
@@ -368,13 +400,8 @@ export async function downloadAnalysisPdf(opts: {
   heading("How Dr Sha can help");
   body(analysis.veluriaRecommendation);
 
-  ensure(30);
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(8);
-  doc.setTextColor(140, 130, 110);
-  const dis = doc.splitTextToSize(analysis.disclaimer, cw) as string[];
-  ensure(dis.length * 10);
-  doc.text(dis, margin, y);
+  // Repeat the prominent disclaimer at the end of the report.
+  disclaimerBox();
 
   try {
     doc.save("DrMSha-Skin-Consultation.pdf");

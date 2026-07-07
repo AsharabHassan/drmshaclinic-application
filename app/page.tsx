@@ -7,6 +7,7 @@ import Processing from "@/components/Processing";
 import AnalysisReport from "@/components/AnalysisReport";
 import type { SkinAnalysis, LeadPayload } from "@/lib/types";
 import type { GhlMeta } from "@/lib/ghl";
+import { DISCLAIMER_SHORT, DISCLAIMER_FULL } from "@/lib/legal";
 
 type Step = "welcome" | "capture" | "form" | "processing" | "result" | "error";
 
@@ -179,6 +180,14 @@ export default function Home() {
               <p className="text-[0.7rem] uppercase tracking-[0.16em] text-plum-mute">
                 Under a minute · Processed privately · Never stored
               </p>
+              {/* Prominent disclaimer so expectations are set before starting. */}
+              <div className="mx-auto mt-2 max-w-md rounded-2xl border border-plum/20 bg-white/60 px-4 py-3">
+                <p className="text-xs font-medium leading-relaxed text-plum-soft">
+                  <span className="font-semibold text-plum">Please note: </span>
+                  {DISCLAIMER_SHORT} Always consult a clinician before any
+                  treatment.
+                </p>
+              </div>
             </div>
 
             <div
