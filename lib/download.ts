@@ -1,13 +1,48 @@
 import type { SkinAnalysis } from "./types";
 
-/** Trigger a browser download of a data URL (e.g. a generated PNG). */
+/**
+ * Trigger a browser download of a data URL (e.g. a generated PNG). Large
+ * data: URLs on an <a download> are unreliable (Safari caps them), so the
+ * payload is converted to a Blob and downloaded via a short object URL.
+ */
 export function downloadDataUrl(dataUrl: string, filename: string): void {
+  let href = dataUrl;
+  let objectUrl: string | null = null;
+  const match = dataUrl.match(/^data:([^;,]+);base64,(.+)$/);
+  if (match) {
+    const bin = atob(match[2]);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    objectUrl = URL.createObjectURL(new Blob([bytes], { type: match[1] }));
+    href = objectUrl;
+  }
   const a = document.createElement("a");
-  a.href = dataUrl;
+  a.href = href;
   a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
+  if (objectUrl) setTimeout(() => URL.revokeObjectURL(objectUrl), 10_000);
+}
+
+/**
+ * Re-encode any image data URL to JPEG via canvas. jsPDF's built-in PNG
+ * decoder rejects some perfectly valid PNGs (including gpt-image-2 output),
+ * so every image is normalised to JPEG before being embedded — this also
+ * keeps the PDF a fraction of the size of embedding raw PNG.
+ */
+async function toJpegDataUrl(src: string, quality = 0.85): Promise<string> {
+  const img = await loadImage(src);
+  const canvas = document.createElement("canvas");
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return src;
+  // White backdrop in case the source has transparency (JPEG has none).
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0);
+  return canvas.toDataURL("image/jpeg", quality);
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -92,7 +127,9 @@ export async function composeBeforeAfter(
   drawPill(ctx, "BEFORE", 32, 32, "rgba(255,255,255,0.9)", "#212121");
   drawPill(ctx, "AFTER", PANEL + 32, 32, "#212121", "#ffffff");
 
-  return canvas.toDataURL("image/png");
+  // JPEG: photographic content, a fraction of the PNG size, and safe for
+  // jsPDF (its PNG decoder chokes on some encoder output).
+  return canvas.toDataURL("image/jpeg", 0.85);
 }
 
 /**
@@ -108,8 +145,11 @@ export async function downloadAnalysisPdf(opts: {
   const { analysis, before, after, map } = opts;
   // Build the labelled side-by-side before/after (real selfie + generated after).
   const beforeAfter = after ? await composeBeforeAfter(before, after) : null;
+  // Normalise the map to JPEG — jsPDF's PNG decoder rejects some valid PNGs
+  // (gpt-image-2 output among them), which used to fail the whole download.
+  const mapJpeg = map ? await toJpegDataUrl(map) : null;
   const { jsPDF } = await import("jspdf");
-  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const doc = new jsPDF({ unit: "pt", format: "a4", compress: true });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 40;
@@ -187,16 +227,16 @@ export async function downloadAnalysisPdf(opts: {
     heading("Before & After — your treatment preview");
     const h = cw * 0.5;
     ensure(h + 4);
-    doc.addImage(beforeAfter, "PNG", margin, y, cw, h);
+    doc.addImage(beforeAfter, "JPEG", margin, y, cw, h);
     y += h + 16;
   }
 
   // Assessment map (square)
-  if (map) {
+  if (mapJpeg) {
     heading("Your assessment map");
     const size = Math.min(cw, 340);
     ensure(size + 4);
-    doc.addImage(map, "PNG", margin, y, size, size);
+    doc.addImage(mapJpeg, "JPEG", margin, y, size, size);
     y += size + 16;
   }
 
@@ -211,5 +251,11 @@ export async function downloadAnalysisPdf(opts: {
   ensure(dis.length * 10);
   doc.text(dis, margin, y);
 
-  doc.save("DrMSha-Skin-Consultation.pdf");
+  try {
+    doc.save("DrMSha-Skin-Consultation.pdf");
+  } catch {
+    // Some mobile/in-app browsers block programmatic downloads — opening the
+    // PDF in a new tab lets the user view and share it instead.
+    window.open(doc.output("bloburl"), "_blank");
+  }
 }

@@ -214,6 +214,13 @@ export default function AnalysisReport({
     setPdfBusy(true);
     try {
       await downloadAnalysisPdf({ analysis, before, after, map: mapImage });
+    } catch (err) {
+      // Never fail silently — tell the user and point them at the print
+      // fallback, which works in every browser.
+      console.error("[pdf] download failed:", err);
+      alert(
+        "Sorry — the PDF couldn't be created on this device. Please use “Open / print report” instead.",
+      );
     } finally {
       setPdfBusy(false);
     }
@@ -224,7 +231,7 @@ export default function AnalysisReport({
   const handleDownloadBeforeAfter = async () => {
     if (!after) return;
     const composite = await composeBeforeAfter(before, after);
-    downloadDataUrl(composite, "drsha-before-after.png");
+    downloadDataUrl(composite, "drsha-before-after.jpg");
   };
 
   return (
@@ -313,16 +320,27 @@ export default function AnalysisReport({
                 <div key={c.label}>
                   <div className="mb-1.5 flex items-baseline justify-between">
                     <span className="text-sm font-medium text-plum">{c.label}</span>
-                    <span className="font-display text-lg text-plum">{c.score}</span>
+                    <span className="font-display text-lg text-plum">
+                      {c.score}
+                      <span className="text-xs text-plum-mute">/100</span>
+                    </span>
                   </div>
                   <ScoreBar score={c.score} />
                   <div className="mt-1.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                     <p className="text-xs text-plum-soft">{c.note}</p>
                     {expected && (
-                      <span className="whitespace-nowrap rounded-full bg-[#E1EFF0] px-2.5 py-0.5 text-[0.7rem] font-medium text-[#3a7a80]">
-                        {expected.kind === "softened"
-                          ? `Lines ${expected.label}`
-                          : `Expected ${expected.label}`}
+                      <span
+                        className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-[0.7rem] font-medium ${
+                          expected.kind === "consult"
+                            ? "bg-[#F7ECDB] text-[#96652a]"
+                            : "bg-[#E1EFF0] text-[#3a7a80]"
+                        }`}
+                      >
+                        {expected.kind === "consult"
+                          ? expected.label
+                          : expected.kind === "softened"
+                            ? `Lines ${expected.label}`
+                            : `Expected ${expected.label}`}
                       </span>
                     )}
                   </div>

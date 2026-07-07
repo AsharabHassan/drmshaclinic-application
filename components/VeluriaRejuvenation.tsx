@@ -67,8 +67,8 @@ const BENEFITS: Benefit[] = [
     ),
   },
   {
-    title: "Brighter, fresher under-eyes",
-    detail: "A more rested, less shadowed eye area.",
+    title: "Fresher under-eye skin",
+    detail: "Smoother, better-hydrated, less crepey eye area.",
     icon: (
       <svg viewBox="0 0 24 24" {...stroke}>
         <path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z" />
@@ -77,8 +77,8 @@ const BENEFITS: Benefit[] = [
     ),
   },
   {
-    title: "Even, calmer tone",
-    detail: "Settles redness and evens out the complexion.",
+    title: "Improved elasticity",
+    detail: "The appearance of firmer, springier, healthier skin.",
     icon: (
       <svg viewBox="0 0 24 24" {...stroke}>
         <circle cx="12" cy="12" r="9" />
@@ -109,12 +109,35 @@ const BENEFITS: Benefit[] = [
   },
 ];
 
-/** Lowest-scoring categories become the personalised focus chips. */
+/**
+ * Categories a hydrating skin booster genuinely addresses. "Tone & redness"
+ * is deliberately excluded — persistent redness/pigmentation is not
+ * booster-treatable and must never appear as a Veluria focus promise.
+ */
+const BOOSTER_SCOPE = new Set([
+  "Hydration",
+  "Radiance",
+  "Texture & pores",
+  "Fine lines",
+]);
+
+/** Lowest-scoring IN-SCOPE categories become the personalised focus chips. */
 function focusAreas(categories: AnalysisCategory[]): string[] {
   return [...(categories ?? [])]
+    .filter((c) => BOOSTER_SCOPE.has(c.label))
     .sort((a, b) => a.score - b.score)
     .slice(0, 3)
     .map((c) => c.label);
+}
+
+/**
+ * True when the patient's redness/pigmentation category scored low enough to
+ * be a visible concern — the section then adds an honest note that this sits
+ * beyond a skin booster, instead of quietly ignoring it.
+ */
+function hasOutOfScopeConcern(categories: AnalysisCategory[]): boolean {
+  const tone = (categories ?? []).find((c) => c.label === "Tone & redness");
+  return !!tone && tone.score < 70;
 }
 
 export default function VeluriaRejuvenation({
@@ -125,6 +148,7 @@ export default function VeluriaRejuvenation({
   cta?: ReactNode;
 }) {
   const focus = focusAreas(categories);
+  const outOfScopeConcern = hasOutOfScopeConcern(categories);
 
   return (
     <div className="overflow-hidden rounded-[2rem] border border-[#E8E8E8] bg-pearl-deep p-6 sm:p-10">
@@ -157,6 +181,13 @@ export default function VeluriaRejuvenation({
               </span>
             ))}
           </div>
+          {outOfScopeConcern && (
+            <p className="mt-3 text-xs leading-relaxed text-[#96652a]">
+              An honest note: concerns like persistent redness or uneven
+              pigmentation sit beyond what a skin booster treats — Dr Sha will
+              advise on the right approach for those at your consultation.
+            </p>
+          )}
         </div>
       )}
 
