@@ -1,11 +1,16 @@
-# GHL setup — email the skin report on booking
+# GHL setup — email the skin report (before booking)
 
-When a customer views their results, the app captures their report PDF into GHL
-(media library) and stores its URL on the contact's **Facial Report Pdf** field.
-When they then book the consultation, a GHL workflow calls the app, which emails
-the customer their report as a PDF attachment via the GHL API.
+When a customer finishes their AI skin analysis, the app:
+1. builds their report PDF and uploads it to the GHL media library,
+2. stores the file URL on the contact's **Facial Report Pdf** field, and
+3. emails the customer their report as a PDF attachment, with a **"Book your
+   free consultation"** CTA linking to the booking calendar.
 
-## 1. Environment variables
+The email is sent **by the app**, *before* booking — it encourages the customer
+to book. GHL still handles its own booking-confirmation emails separately, so
+there is **no webhook and no workflow to build** for this feature.
+
+## Environment variables
 
 Set these in **Vercel → Project → Settings → Environment Variables** (and in
 `.env.local` for local dev). Never commit the real token.
@@ -15,8 +20,8 @@ Set these in **Vercel → Project → Settings → Environment Variables** (and 
 | `GHL_API_KEY` | The Private Integration token (`pit-…`). |
 | `GHL_LOCATION_ID` | `XnwkbaimNt2dfzDG3w4K` |
 | `GHL_REPORT_FIELD_KEY` | `facial_report_pdf` |
-| `GHL_REPORT_FIELD_ID` | `Glut0DNmtFHMAvhwuHbn` (the id of the Facial Report Pdf field) |
-| `GHL_WEBHOOK_SECRET` | A long random string of your choosing (used in the webhook URL below). |
+| `GHL_REPORT_FIELD_ID` | `Glut0DNmtFHMAvhwuHbn` (id of the Facial Report Pdf field) |
+| `GHL_BOOKING_URL` | `https://link.drmshaclinic.com/widget/bookings/free-online-phone-consultation` (optional — this is the default) |
 
 The Private Integration token needs scopes: **Contacts** (read + write),
 **Medias** (write), and **Conversations / Conversations Messages** (write).
@@ -24,33 +29,23 @@ The Private Integration token needs scopes: **Contacts** (read + write),
 > If the "Facial Report Pdf" custom field is ever recreated, its id changes —
 > update `GHL_REPORT_FIELD_ID` to match.
 
-## 2. The GHL workflow
+## De-dupe
 
-Create one workflow in the sub-account:
+The email is sent once per contact. After sending, the app adds a
+`facial-report-emailed` tag to the contact and skips anyone who already has it.
 
-1. **Trigger:** *Customer Booked Appointment* — filter it to the
-   **free-online-phone-consultation** calendar
-   (`https://link.drmshaclinic.com/widget/bookings/free-online-phone-consultation`).
-2. **Action:** *Webhook* — method **POST**, URL:
-
-   ```
-   https://app.drmshaclinic.com/api/appointment-booked?key=<GHL_WEBHOOK_SECRET>
-   ```
-
-   In the webhook payload, include at least the contact **id** (`contactId`) and,
-   if available, **firstName** (used to personalise the greeting).
-3. **Save & publish.**
-
-That's all — the report is captured automatically while the customer views their
-results, so by booking time their contact already has the PDF, and the email
-goes out with it attached. If a booking somehow arrives before the report was
-captured, the email still sends (without the attachment) and is logged.
-
-## 3. How to test
+## How to test
 
 1. Run a real analysis on the live site with a test email you control.
 2. In GHL, confirm that contact's **Facial Report Pdf** field is populated with a
-   `assets.cdn.filesafe.space/…​.pdf` URL.
-3. Book a test appointment on the calendar (or fire the workflow manually).
-4. Confirm the email arrives with the PDF attached, and the contact gains the
-   `facial-report-emailed` tag (which prevents duplicate sends).
+   `assets.cdn.filesafe.space/…​.pdf` URL, the contact has the
+   `facial-report-emailed` tag, and the report email is in their conversation.
+3. Confirm the email arrives with the PDF attached and the booking CTA works.
+
+## What changed from the earlier design
+
+The first version emailed the report **after** booking, triggered by a GHL
+"Appointment Booked → Webhook" workflow (which needed a shared `GHL_WEBHOOK_SECRET`).
+That is no longer used: the email now goes out **before** booking, sent by the
+app when the analysis completes — so the webhook, the workflow, and the secret
+are all gone.

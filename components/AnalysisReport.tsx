@@ -217,13 +217,15 @@ export default function AnalysisReport({
 
   useEffect(() => setMounted(true), []);
 
-  // Silently capture the report PDF into GHL so it can be emailed when the
-  // customer books. Runs when the report is ready and re-runs when the
-  // after-image / map arrive, so the stored copy stays current. Best-effort —
+  // Silently capture the report PDF into GHL and, once it's finalised, email it
+  // to the customer with a "book your consultation" CTA. Re-runs as the
+  // after-image / map arrive so the stored copy stays current; the emailed copy
+  // is sent when generation has settled (nothing left pending). Best-effort —
   // never blocks or surfaces anything on the results page.
   useEffect(() => {
     if (!email || !before) return;
-    const key = `${email}|${after ? "a" : ""}|${mapImage ? "m" : ""}`;
+    const settled = !afterPending && !mapPending;
+    const key = `${email}|${after ? "a" : ""}|${mapImage ? "m" : ""}|${settled ? "final" : ""}`;
     if (key === lastUploadKey.current) return;
     lastUploadKey.current = key;
     let cancelled = false;
@@ -239,7 +241,7 @@ export default function AnalysisReport({
         await fetch("/api/report", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, name, pdfBase64 }),
+          body: JSON.stringify({ email, name, pdfBase64, sendEmail: settled }),
         });
       } catch {
         /* best-effort; never disrupt the results page */
@@ -248,7 +250,7 @@ export default function AnalysisReport({
     return () => {
       cancelled = true;
     };
-  }, [email, name, before, after, mapImage, analysis]);
+  }, [email, name, before, after, mapImage, analysis, afterPending, mapPending]);
 
   const handlePdf = async () => {
     setPdfBusy(true);
