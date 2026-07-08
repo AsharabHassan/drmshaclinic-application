@@ -156,13 +156,18 @@ export async function addContactTag(
   });
 }
 
-/** Send an email to a contact via the Conversations API. */
+/**
+ * Send an email to a contact via the Conversations API. The "from" address is
+ * taken from GHL_EMAIL_FROM (must be a verified sender in the GHL account); if
+ * unset, GHL uses the location's default sending address.
+ */
 export async function sendEmail(input: {
   contactId: string;
   subject: string;
   html: string;
   attachments?: string[];
 }): Promise<void> {
+  const from = process.env.GHL_EMAIL_FROM;
   await ghl("/conversations/messages", {
     method: "POST",
     headers: headers(),
@@ -171,6 +176,7 @@ export async function sendEmail(input: {
       contactId: input.contactId,
       subject: input.subject,
       html: input.html,
+      ...(from ? { emailFrom: from } : {}),
       ...(input.attachments?.length ? { attachments: input.attachments } : {}),
     }),
   });
