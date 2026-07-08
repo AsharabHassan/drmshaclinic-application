@@ -22,7 +22,7 @@ export function reportEmail(firstName: string): {
     html: `
 <div style="font-family:Helvetica,Arial,sans-serif;color:#2b2b2b;line-height:1.6;font-size:15px">
   <p>${hi}</p>
-  <p>Thank you for taking your complimentary AI skin consultation with
+  <p>Thank you for taking your complimentary AI skin scan with
   <strong>Dr.M.Sha Wellness &amp; Aesthetics Clinic</strong>. Your personalised
   skin report is attached as a PDF — it includes your skin analysis, treatment
   map, and a before/after preview.</p>
