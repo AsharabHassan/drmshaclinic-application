@@ -3,23 +3,22 @@ import {
   upsertContact,
   uploadMedia,
   setContactReportUrl,
-  getContact,
   sendEmail,
-  addContactTag,
 } from "@/lib/ghlApi";
 import { reportEmail } from "@/lib/reportEmail";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
-const SENT_TAG = "facial-report-emailed";
-
 /**
  * Captures the customer's report PDF into GHL at results time and — once the
  * report is finalised — emails it to the customer with a "book your free
  * consultation" CTA. Sent BEFORE booking, by the app; GHL handles its own
- * booking-confirmation emails separately. De-duped by a contact tag so the
- * customer is emailed at most once. Best-effort: never surfaces a failure.
+ * booking-confirmation emails separately. Sent on EVERY completed analysis (no
+ * per-contact de-dupe) — the same email may be reused for a different person's
+ * photo, and each of those is a genuinely new report. The client fires the
+ * emailing request once per finished analysis. Best-effort: never surfaces a
+ * failure.
  */
 export async function POST(req: Request) {
   let body: {
@@ -59,15 +58,13 @@ export async function POST(req: Request) {
     );
     await setContactReportUrl(contactId, url);
 
-    // Email the finished report (with the book-now CTA), once per contact.
+    // Email the finished report (with the book-now CTA) on every completed
+    // analysis — no de-dupe, so a repeat submission (e.g. same email, a
+    // different person's photo) still gets its own report.
     if (shouldEmail) {
-      const contact = await getContact(contactId);
-      if (!contact.tags.includes(SENT_TAG)) {
-        const firstName = (name ?? "").trim().split(/\s+/)[0] ?? "";
-        const { subject, html } = reportEmail(firstName);
-        await sendEmail({ contactId, subject, html, attachments: [url] });
-        await addContactTag(contactId, SENT_TAG);
-      }
+      const firstName = (name ?? "").trim().split(/\s+/)[0] ?? "";
+      const { subject, html } = reportEmail(firstName);
+      await sendEmail({ contactId, subject, html, attachments: [url] });
     }
   } catch (err) {
     // Log and swallow — the customer's results page must never be affected.
