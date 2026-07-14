@@ -110,8 +110,25 @@ export default function Home() {
         severity: a.severity,
       })) ?? [];
 
+    // Two-pass reveal. A "medium" generation takes ~60s, and stacked on top of
+    // the analysis (~15s) and the map (~25s) that left the client staring at a
+    // loading screen for well over a minute — long enough to read as broken and
+    // to abandon. "low" returns in ~26s and already looks the part, so show it
+    // as soon as it lands and quietly swap in the sharper pass behind it.
+    //
+    // The refinement must never overwrite a good preview with nothing: only
+    // replace the image if the second pass actually returns one.
+    let refined = false;
+    fetchAfter(image, "low", concerns, false).then((preview) => {
+      if (preview && !refined) setAfterImage(preview);
+      setAfterPending(false);
+    });
+
     fetchAfter(image, "medium", concerns, false).then((afterImg) => {
-      if (afterImg) setAfterImage(afterImg);
+      if (afterImg) {
+        refined = true;
+        setAfterImage(afterImg);
+      }
       setAfterPending(false);
     });
 
