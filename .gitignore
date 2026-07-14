@@ -38,3 +38,5 @@ next-env.d.ts
 
 # Playwright MCP test artifacts (screenshots/snapshots)
 .playwright-mcp/
+
+certificates
