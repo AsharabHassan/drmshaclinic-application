@@ -109,7 +109,7 @@ export default function CaseStudy() {
           </h4>
           <p className="mt-4 leading-relaxed text-plum">
             A bespoke facial rejuvenation plan designed by Dr Sha — softening
-            fine lines, restoring lost volume and refreshing overall skin tone
+            fine lines, firming and refining the skin and evening overall tone
             for a naturally rested, more youthful result that still looks like
             you.
           </p>
