@@ -110,15 +110,22 @@ const BENEFITS: Benefit[] = [
 ];
 
 /**
- * Categories a hydrating skin booster genuinely addresses. "Tone & redness"
- * is deliberately excluded — persistent redness/pigmentation is not
- * booster-treatable and must never appear as a Veluria focus promise.
+ * Categories the Veluria range genuinely addresses — which is all of them.
+ *
+ * This set used to exclude "Tone & redness" on the belief that pigmentation was
+ * "not booster-treatable". That was a leftover from when the app modelled
+ * Veluria as one hydrating booster: Pearl Tone (glutathione) is sold
+ * specifically to even tone and soften hyperpigmentation, and Ultra Lift (DMAE)
+ * for firmness. Excluding them meant the focus chips silently dropped the two
+ * concerns most clients actually arrive with.
  */
 const BOOSTER_SCOPE = new Set([
   "Hydration",
   "Radiance",
   "Texture & pores",
   "Fine lines",
+  "Tone & redness",
+  "Firmness & elasticity",
 ]);
 
 /** Lowest-scoring IN-SCOPE categories become the personalised focus chips. */
@@ -131,9 +138,14 @@ function focusAreas(categories: AnalysisCategory[]): string[] {
 }
 
 /**
- * True when the patient's redness/pigmentation category scored low enough to
- * be a visible concern — the section then adds an honest note that this sits
- * beyond a skin booster, instead of quietly ignoring it.
+ * True when the patient's redness/pigmentation category scored low enough to be
+ * a visible concern. The section then adds an honest note drawing the one line
+ * that still holds here: Pearl Tone evens pigment and Silk Skin calms irritated
+ * redness, but a visible THREAD VEIN is a vessel and no booster removes it.
+ *
+ * The note used to say pigmentation itself sat "beyond what a skin booster
+ * treats", which contradicted Pearl Tone and talked the client out of the
+ * product they were being recommended two paragraphs above.
  */
 function hasOutOfScopeConcern(categories: AnalysisCategory[]): boolean {
   const tone = (categories ?? []).find((c) => c.label === "Tone & redness");
@@ -158,10 +170,10 @@ export default function VeluriaRejuvenation({
       </h3>
       <p className="mt-4 max-w-2xl leading-relaxed text-plum">
         Veluria is an advanced <strong className="font-semibold">PB Serum
-        enzyme-based bio-remodelling treatment</strong>. Rather than sitting on the
-        surface, its enzymes work <em>within</em> your skin — gently restructuring
-        and renewing it from the deeper layers, so your complexion looks firmer,
-        fresher and naturally rejuvenated.
+        enzyme-based bio-remodelling treatment</strong>, offered at Dr.M.Sha Wellness and Aesthetics Clinic.
+        Rather than sitting on the surface, its enzymes work <em>within</em> your
+        skin — gently restructuring and renewing it from the deeper layers, so
+        your complexion looks firmer, fresher and naturally rejuvenated.
       </p>
 
       {/* Personalised focus — pulled from this patient's lowest scores */}
@@ -183,9 +195,11 @@ export default function VeluriaRejuvenation({
           </div>
           {outOfScopeConcern && (
             <p className="mt-3 text-xs leading-relaxed text-[#96652a]">
-              An honest note: concerns like persistent redness or uneven
-              pigmentation sit beyond what a skin booster treats — Dr Sha will
-              advise on the right approach for those at your consultation.
+              An honest note: uneven tone and pigmentation are exactly what
+              Veluria Pearl Tone is for, and Silk Skin calms irritated-looking
+              redness — but any visible thread veins or broken capillaries are
+              vessels, and no skin booster removes those. Dr Sha will advise on the right approach for those at your
+              consultation.
             </p>
           )}
         </div>
