@@ -1,4 +1,5 @@
 import type { SkinAnalysis } from "./types";
+import { drawCover, loadImage } from "./canvas";
 import { expectedImprovement } from "./expectations";
 import { DISCLAIMER_FULL } from "./legal";
 
@@ -45,32 +46,6 @@ async function toJpegDataUrl(src: string, quality = 0.85): Promise<string> {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(img, 0, 0);
   return canvas.toDataURL("image/jpeg", quality);
-}
-
-function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("Failed to load image"));
-    img.src = src;
-  });
-}
-
-/** Draw an image cover-cropped (centered) into a destination rectangle. */
-function drawCover(
-  ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement,
-  dx: number,
-  dy: number,
-  dw: number,
-  dh: number,
-): void {
-  const scale = Math.max(dw / img.width, dh / img.height);
-  const sw = dw / scale;
-  const sh = dh / scale;
-  const sx = (img.width - sw) / 2;
-  const sy = (img.height - sh) / 2;
-  ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
 }
 
 function drawPill(
