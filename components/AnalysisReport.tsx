@@ -6,7 +6,6 @@ import type { SkinAnalysis } from "@/lib/types";
 import AnnotatedFace from "./AnnotatedFace";
 import BeforeAfterSlider from "./BeforeAfterSlider";
 import AfterCallouts from "./AfterCallouts";
-import CourseProgression from "./CourseProgression";
 import ConcernZooms from "./ConcernZooms";
 import ScoreDestination from "./ScoreDestination";
 import ReviewsSlider from "./ReviewsSlider";
@@ -585,13 +584,6 @@ export default function AnalysisReport({
           </div>
         )}
 
-        {after && (
-          <CourseProgression
-            before={before}
-            after={after}
-            onStep={(key) => fire("ProgressionStepped", { step: key })}
-          />
-        )}
 
         {after && programme.length > 0 && (
           <div className="mt-5 rounded-2xl border border-white/70 bg-white/55 p-4 text-center backdrop-blur-sm">
@@ -700,11 +692,7 @@ export default function AnalysisReport({
                             : "bg-[#E1EFF0] text-[#3a7a80]"
                         }`}
                       >
-                        {expected.kind === "consult"
-                          ? expected.label
-                          : expected.kind === "softened"
-                            ? `Lines ${expected.label}`
-                            : `Expected ${expected.label}`}
+                        {expected.label}
                       </span>
                     )}
                   </div>
