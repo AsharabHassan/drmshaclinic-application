@@ -25,7 +25,8 @@ export function reportEmail(firstName: string): {
   <p>Thank you for taking your complimentary AI skin scan with
   <strong>Dr.M.Sha Wellness &amp; Aesthetics Clinic</strong>. Your personalised
   skin report is attached as a PDF — it includes your skin analysis, treatment
-  map, and a before/after preview.</p>
+  map, a before/after preview, and a score for each area showing where your
+  skin can get to.</p>
   <p>The best next step is a <strong>free, no-obligation phone consultation</strong>,
   where we&rsquo;ll walk you through your results together and recommend the right
   plan for your skin — whether that&rsquo;s Veluria or something else.</p>
