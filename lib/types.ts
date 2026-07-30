@@ -33,7 +33,27 @@ export interface FaceAnnotation {
   concern: string;
   /** Suggested treatment direction (Veluria where skin-quality related) */
   treatment: string;
+  /**
+   * Explicit claim boundary from the vision analysis. `preserve` means the
+   * feature may be flagged and discussed, but no preview or projection may
+   * imply that Veluria changed it.
+   */
+  scope?: "veluria" | "preserve";
   severity: "low" | "moderate" | "notable";
+  /**
+   * The image prompt for THIS area's close-up, written by Claude during the
+   * analysis rather than assembled from a template here.
+   *
+   * WHY CLAUDE WRITES IT. Claude has actually looked at the photograph. A
+   * template can only say "the texture is smoother"; Claude can say what this
+   * person's skin is actually doing — the direction the crepe runs, how the
+   * light falls, what shade the skin is — and an image model responds to a
+   * specific photographic description far better than to a generic one.
+   *
+   * Optional: an older analysis, or a model that omits it, falls back to the
+   * template in lib/prompts.ts.
+   */
+  imagePrompt?: string;
 }
 
 export interface SkinAnalysis {
@@ -41,6 +61,25 @@ export interface SkinAnalysis {
   categories: AnalysisCategory[];
   /** Pinned points on the face marking areas to address */
   annotations: FaceAnnotation[];
+  /**
+   * Claude's photographic brief for the whole-face "after", written from the
+   * client's actual photo. ONE brief for the face, not one per area: the
+   * per-area briefs it replaced fed a pipeline that generated small crops and
+   * pasted them back, which changed ~15% of the frame and left clients saying
+   * their face looked the same. See app/api/transform/route.ts.
+   */
+  afterImagePrompt?: string;
+  /**
+   * Visible features a skin booster cannot treat — moles, skin tags, rosacea,
+   * melasma, active acne, thread veins, scarring — each named and located by
+   * Claude from the actual photograph.
+   *
+   * Two consumers, and neither is optional. The image prompt uses it to say
+   * what must not be touched, and the report shows it to the client as the
+   * honest limit of what this treatment does. A simulation that quietly clears
+   * someone's rosacea is a false claim about a medical treatment.
+   */
+  preserve?: string[];
   veluriaRecommendation: string;
   /** Always present, non-medical disclaimer */
   disclaimer: string;

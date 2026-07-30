@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import SelfieCapture from "@/components/SelfieCapture";
 import LeadForm from "@/components/LeadForm";
 import Processing from "@/components/Processing";
 import AnalysisReport from "@/components/AnalysisReport";
 import type { SkinAnalysis, LeadPayload } from "@/lib/types";
+import { analyseSkinPhoto, createAfterPreview } from "@/lib/afterPreview";
 import type { GhlMeta } from "@/lib/ghl";
 import { heroFirst, heroZone, type HeroZone } from "@/lib/hero";
 import { DISCLAIMER_SHORT, DISCLAIMER_FULL } from "@/lib/legal";
@@ -27,8 +28,22 @@ export default function Home() {
   // guaranteed to be talking about the same part of the face.
   const [hero, setHero] = useState<HeroZone | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>("");
+  const analysisPromise = useRef<Promise<SkinAnalysis> | null>(null);
+  const previewPromise = useRef<Promise<string | null> | null>(null);
+
+  const startPipeline = (image: string): Promise<SkinAnalysis> => {
+    const analysisRequest = analyseSkinPhoto(image);
+    analysisRequest.catch(() => {});
+    analysisPromise.current = analysisRequest;
+    previewPromise.current = analysisRequest
+      .then((result) => createAfterPreview(image, result))
+      .catch(() => null);
+    return analysisRequest;
+  };
 
   const reset = () => {
+    analysisPromise.current = null;
+    previewPromise.current = null;
     setSelfie(null);
     setLead(null);
     setLeadMeta(null);
@@ -82,14 +97,7 @@ export default function Home() {
 
     let analysisResult: SkinAnalysis;
     try {
-      const r = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image }),
-      });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data.error ?? "Analysis failed.");
-      analysisResult = data.analysis as SkinAnalysis;
+      analysisResult = await (analysisPromise.current ?? startPipeline(image));
       setAnalysis(analysisResult);
       setStep("result");
     } catch (err) {
@@ -134,28 +142,16 @@ export default function Home() {
         severity: a.severity,
       })) ?? [];
 
-    // Two-pass reveal. A "medium" generation takes ~60s, and stacked on top of
-    // the analysis (~15s) and the map (~25s) that left the client staring at a
-    // loading screen for well over a minute — long enough to read as broken and
-    // to abandon. "low" returns in ~26s and already looks the part, so show it
-    // as soon as it lands and quietly swap in the sharper pass behind it.
-    //
-    // The refinement must never overwrite a good preview with nothing: only
-    // replace the image if the second pass actually returns one.
-    let refined = false;
-    fetchAfter(image, "low", concerns, false, heroArea).then((preview) => {
-      if (preview && !refined) setAfterImage(preview);
+    // Reuse the production-quality render that began as soon as analysis
+    // finished. This removes the redundant low-quality generation and overlaps
+    // the expensive work with form completion without lowering image quality.
+    const afterPromise = (
+      previewPromise.current ?? createAfterPreview(image, analysisResult)
+    ).then((afterImg) => {
+      if (afterImg) setAfterImage(afterImg);
       setAfterPending(false);
+      return afterImg;
     });
-
-    fetchAfter(image, "medium", concerns, false, heroArea).then((afterImg) => {
-      if (afterImg) {
-        refined = true;
-        setAfterImage(afterImg);
-      }
-      setAfterPending(false);
-    });
-
     fetch("/api/map", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -262,6 +258,7 @@ export default function Home() {
             <SelfieCapture
               onCaptured={(url) => {
                 setSelfie(url);
+                startPipeline(url);
                 setStep("form");
               }}
             />
