@@ -10,7 +10,7 @@ import ConcernZooms from "./ConcernZooms";
 import ScoreDestination from "./ScoreDestination";
 import ReviewsSlider from "./ReviewsSlider";
 import CaseStudy from "./CaseStudy";
-import VeluriaRejuvenation from "./VeluriaRejuvenation";
+import VeluriaEducation from "./VeluriaEducation";
 import VeluriaStack from "./VeluriaStack";
 import { bookingUrl, planSummary, type CtaPlacement } from "@/lib/booking";
 import { expectedImprovement } from "@/lib/expectations";
@@ -266,6 +266,7 @@ export default function AnalysisReport({
   analysis,
   email,
   name,
+  phone,
   onRestart,
 }: {
   before: string;
@@ -278,6 +279,7 @@ export default function AnalysisReport({
   analysis: SkinAnalysis;
   email?: string | null;
   name?: string | null;
+  phone?: string | null;
   onRestart: () => void;
 }) {
   const [lightbox, setLightbox] = useState<string | null>(null);
@@ -341,6 +343,7 @@ export default function AnalysisReport({
       hero,
       name,
       email,
+      phone,
       placement,
     });
 
@@ -500,7 +503,7 @@ export default function AnalysisReport({
               <PhoneConsultButton
                 href={ctaHref("score")}
                 onClick={onBookingClick("score")}
-                label="Book your free consultation"
+                label="Choose a time to review my results"
               />
               <p className="text-xs text-plum-mute">
                 15 minutes with Dr Sha — no cost, no obligation.
@@ -508,6 +511,11 @@ export default function AnalysisReport({
             </>
           }
         />
+      </section>
+
+      <section className="animate-fade-scale" style={{ animationDelay: "70ms" }}>
+        <VeluriaEducation report clinicName="Dr. M. Sha Wellness & Aesthetics Clinic" programme={programme}
+          cta={<PhoneConsultButton href={ctaHref("rejuvenation")} onClick={onBookingClick("rejuvenation")} label="Ask what is realistic for my skin" />} />
       </section>
 
       {/* Before / After */}
@@ -540,6 +548,13 @@ export default function AnalysisReport({
               analysis is below.
             </p>
           </div>
+        )}
+        {after && (
+          <p className="mt-3 text-center text-xs italic text-plum-mute">
+            Illustrative AI simulation of a possible appearance 4–6 weeks after
+            a completed clinician-planned course. Individual results vary and
+            are not guaranteed. Not medical advice or clinical evidence.
+          </p>
         )}
         {/*
           Name the plan against the image. The preview used to be captioned only
@@ -577,19 +592,24 @@ export default function AnalysisReport({
           rather than waiting for the end of the section.
         */}
         {after && zones.length > 0 && (
-          <div className="mt-7 flex flex-col items-center gap-2">
-            <PhoneConsultButton
-              href={ctaHref("hero-zoom")}
-              onClick={onBookingClick("hero-zoom")}
-              label="Get this result — book free"
-            />
-            <p className="text-xs text-plum-mute">
-              Dr Sha will confirm what your skin needs to get there.
-            </p>
+          <div className="mt-8 overflow-hidden rounded-[1.75rem] border border-serum/20 bg-plum px-6 py-7 text-white shadow-[0_24px_70px_-30px_rgba(16,52,54,0.7)] sm:px-8 sm:py-8">
+            <div className="grid gap-6 sm:grid-cols-[1fr_auto] sm:items-center">
+              <div>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-serum">Free 15-minute results review</p>
+                <h3 className="display mt-2 text-2xl text-white sm:text-3xl">Turn your preview into a realistic plan</h3>
+                <ul className="mt-4 grid gap-2 text-sm leading-relaxed text-white/80">
+                  <li>• Review what the simulation can and cannot predict</li>
+                  <li>• Confirm which Veluria option genuinely fits your priorities</li>
+                  <li>• Leave with clear next steps and pricing, without obligation</li>
+                </ul>
+              </div>
+              <div className="flex flex-col items-start gap-2 sm:items-center">
+                <PhoneConsultButton href={ctaHref("hero-zoom")} onClick={onBookingClick("hero-zoom")} label="Review what is realistic for me" />
+                <p className="text-xs text-white/60">Your contact details are pre-filled.</p>
+              </div>
+            </div>
           </div>
         )}
-
-
         {after && programme.length > 0 && (
           <div className="mt-5 rounded-2xl border border-white/70 bg-white/55 p-4 text-center backdrop-blur-sm">
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-plum-soft">
@@ -706,20 +726,6 @@ export default function AnalysisReport({
             })}
           </div>
         </div>
-      </section>
-
-      {/* Veluria rejuvenation — how Veluria helps this patient */}
-      <section className="animate-fade-scale" style={{ animationDelay: "200ms" }}>
-        <VeluriaRejuvenation
-          categories={analysis.categories}
-          cta={
-            <PhoneConsultButton
-              href={ctaHref("rejuvenation")}
-              onClick={onBookingClick("rejuvenation")}
-              label="Book your free consultation"
-            />
-          }
-        />
       </section>
 
       {/* Case study: real before & after */}

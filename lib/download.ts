@@ -230,6 +230,11 @@ async function buildAnalysisPdfDoc(opts: PdfOpts) {
     return w;
   };
 
+  heading("Understanding Veluria");
+  body("Veluria is a professional cosmetic bioremodelling range focused on visible skin quality — texture, firmness, tone, luminosity and vitality — while preserving natural facial features.", 10);
+  body("Your clinician assesses suitability, selects the appropriate formula and decides the technique, number and spacing of sessions. It may be integrated into a microneedling-led protocol when clinically appropriate.", 10);
+  body("Dermal filler primarily restores volume and contour; wrinkle-relaxing injections reduce selected muscle movement; Veluria focuses on the appearance of the skin itself. It does not diagnose or treat lesions, active skin disease, visible vessels or structural volume loss.", 10);
+
   // Scores
   heading("Skin scores");
   analysis.categories.forEach((c) => {

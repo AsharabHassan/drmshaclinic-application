@@ -5,6 +5,7 @@ import SelfieCapture from "@/components/SelfieCapture";
 import LeadForm from "@/components/LeadForm";
 import Processing from "@/components/Processing";
 import AnalysisReport from "@/components/AnalysisReport";
+import VeluriaEducation from "@/components/VeluriaEducation";
 import type { SkinAnalysis, LeadPayload } from "@/lib/types";
 import { analyseSkinPhoto, createAfterPreview } from "@/lib/afterPreview";
 import type { GhlMeta } from "@/lib/ghl";
@@ -244,6 +245,13 @@ export default function Home() {
                 </div>
               ))}
             </div>
+
+            <div className="mx-auto mt-14 max-w-2xl animate-fade-scale" style={{ animationDelay: "540ms" }}>
+              <VeluriaEducation
+                clinicName="Dr. M. Sha Wellness & Aesthetics Clinic"
+                cta={<button onClick={() => setStep("capture")} className="btn-ghost">See what may suit my skin</button>}
+              />
+            </div>
           </section>
         )}
 
@@ -292,6 +300,7 @@ export default function Home() {
             analysis={analysis}
             email={lead?.email ?? null}
             name={lead?.name ?? null}
+            phone={lead?.phone ?? null}
             onRestart={reset}
           />
         )}
