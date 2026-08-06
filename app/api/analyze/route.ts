@@ -48,6 +48,36 @@ function extractJson(text: string): SkinAnalysis | { error: string } | null {
  * build a product plan or an After prompt from it.
  */
 function enforcePreservationScope(analysis: SkinAnalysis): SkinAnalysis {
+  // Model JSON is structurally valid but can still contain a missing/null score.
+  // One such Radiance value previously propagated into the report and turned
+  // both the category projection and the headline average into `NaN`. Keep the
+  // completed analysis usable by replacing only malformed scores with the mean
+  // of the other valid category scores; genuine scores remain untouched.
+  const sourceCategories = Array.isArray(analysis.categories)
+    ? analysis.categories
+    : [];
+  const validScores = sourceCategories
+    .map((category) => category?.score)
+    .filter(
+      (score): score is number =>
+        typeof score === "number" && Number.isFinite(score),
+    )
+    .map((score) => Math.max(0, Math.min(100, score)));
+  const fallbackScore =
+    validScores.length > 0
+      ? Math.round(
+          validScores.reduce((total, score) => total + score, 0) /
+            validScores.length,
+        )
+      : 50;
+  const categories = sourceCategories.map((category) => ({
+    ...category,
+    score:
+      typeof category.score === "number" && Number.isFinite(category.score)
+        ? Math.round(Math.max(0, Math.min(100, category.score)))
+        : fallbackScore,
+  }));
+
   const preserve = Array.isArray(analysis.preserve)
     ? analysis.preserve.filter((item): item is string => typeof item === "string")
     : [];
@@ -87,6 +117,7 @@ function enforcePreservationScope(analysis: SkinAnalysis): SkinAnalysis {
 
   return {
     ...analysis,
+    categories,
     annotations,
     preserve: [...new Set([...preserve, ...additions])].slice(0, 12),
   };

@@ -119,6 +119,12 @@ export function expectedImprovement(
   const cal = CALIBRATIONS[category.label];
   if (!cal) return null;
 
+  // API responses are normalised before reaching the report, but keep this
+  // arithmetic boundary defensive as well: a malformed historic/client value
+  // must never poison the overall projection with `NaN`.
+  if (typeof category.score !== "number" || !Number.isFinite(category.score))
+    return null;
+
   const score = clamp(category.score, 0, 100);
   const headroom = 100 - score;
   const mid = clamp(headroom * cal.factor, cal.floor, cal.ceiling);
