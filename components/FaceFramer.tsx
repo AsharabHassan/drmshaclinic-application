@@ -102,7 +102,7 @@ export default function FaceFramer({
     if (!ctx) return;
     ctx.imageSmoothingQuality = "high";
     ctx.drawImage(img, sx, sy, side, side, 0, 0, OUT, OUT);
-    onConfirm(canvas.toDataURL("image/jpeg", 0.92));
+    onConfirm(canvas.toDataURL("image/jpeg", 0.88));
   };
 
   // Scale against the box's REAL on-screen size, not the 1024 output size — the

@@ -17,16 +17,41 @@ const MAX_SOURCE = 1600;
  * came back looking identical to the "before". Framing, not the prompt, was the
  * reason the preview looked untouched.
  */
-async function bitmapToDataUrl(bitmap: ImageBitmap, quality = 0.92): Promise<string> {
-  const scale = Math.min(1, MAX_SOURCE / Math.max(bitmap.width, bitmap.height));
+async function imageToDataUrl(source: CanvasImageSource, width: number, height: number, quality = 0.92): Promise<string> {
+  const scale = Math.min(1, MAX_SOURCE / Math.max(width, height));
   const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
+  canvas.width = Math.round(width * scale);
+  canvas.height = Math.round(height * scale);
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas unavailable");
   ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
   return canvas.toDataURL("image/jpeg", quality);
+}
+
+async function fileToDataUrl(file: File): Promise<string> {
+  if (typeof createImageBitmap === "function") {
+    try {
+      const bitmap = await createImageBitmap(file);
+      try {
+        return await imageToDataUrl(bitmap, bitmap.width, bitmap.height);
+      } finally {
+        bitmap.close();
+      }
+    } catch {}
+  }
+  const url = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const element = new Image();
+      element.onload = () => resolve(element);
+      element.onerror = () => reject(new Error("Image decode failed"));
+      element.src = url;
+    });
+    return imageToDataUrl(image, image.naturalWidth || image.width, image.naturalHeight || image.height);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 export default function SelfieCapture({
@@ -52,7 +77,18 @@ export default function SelfieCapture({
     setCameraOn(false);
   };
 
-  useEffect(() => () => stopCamera(), []);
+  useEffect(() => {
+    const stopWhenHidden = () => {
+      if (document.visibilityState === "hidden") stopCamera();
+    };
+    window.addEventListener("pagehide", stopCamera);
+    document.addEventListener("visibilitychange", stopWhenHidden);
+    return () => {
+      window.removeEventListener("pagehide", stopCamera);
+      document.removeEventListener("visibilitychange", stopWhenHidden);
+      stopCamera();
+    };
+  }, []);
 
   // Attach the stream AFTER the <video> element mounts (cameraOn -> true).
   // Setting srcObject inside startCamera fails because the element isn't in
@@ -111,13 +147,15 @@ export default function SelfieCapture({
     frame.height = video.videoHeight;
     const fctx = frame.getContext("2d");
     if (!fctx) return;
+    fctx.translate(frame.width, 0);
+    fctx.scale(-1, 1);
     fctx.drawImage(video, 0, 0);
+    fctx.setTransform(1, 0, 0, 1, 0, 0);
     stopCamera();
 
     setBusy(true);
     try {
-      const bitmap = await createImageBitmap(frame);
-      toFraming(await bitmapToDataUrl(bitmap));
+      toFraming(await imageToDataUrl(frame, frame.width, frame.height));
     } catch {
       setError("We couldn't read that photo. Please try again.");
     } finally {
@@ -142,8 +180,7 @@ export default function SelfieCapture({
     setBusy(true);
     setError(null);
     try {
-      const bitmap = await createImageBitmap(file);
-      toFraming(await bitmapToDataUrl(bitmap));
+      toFraming(await fileToDataUrl(file));
     } catch {
       setError("We couldn't read that image. Please try another.");
     } finally {
@@ -282,7 +319,6 @@ export default function SelfieCapture({
             ref={fileRef}
             type="file"
             accept="image/*"
-            capture="user"
             className="hidden"
             onChange={onFile}
           />

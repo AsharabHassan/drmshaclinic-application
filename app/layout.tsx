@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Cormorant_Garamond, Montserrat } from "next/font/google";
 import { META_PIXEL_ID } from "@/lib/meta";
@@ -23,6 +23,17 @@ export const metadata: Metadata = {
   title: "AI Skin Consultation | Dr.M.Sha Wellness & Aesthetics Clinic",
   description:
     "A complimentary AI skin consultation by Dr.M.Sha Wellness and Aesthetics Clinic — an in-depth skin analysis, a professional treatment map, and a personalised preview of your results.",
+  applicationName: "Dr M.Sha Clinic",
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Dr M.Sha Clinic" },
+  formatDetection: { telephone: false },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  colorScheme: "light",
+  themeColor: "#FBF8F3",
 };
 
 export default function RootLayout({

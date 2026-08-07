@@ -64,6 +64,7 @@ export async function analyseSkinPhoto(image: string): Promise<SkinAnalysis> {
 export async function createAfterPreview(
   image: string,
   analysis: SkinAnalysis,
+  retriesRemaining = 1,
 ): Promise<string | null> {
   const profile = dullSkinProfile(analysis);
   const hero = heroZone(profile.annotations, analysis.categories);
@@ -79,7 +80,7 @@ export async function createAfterPreview(
     ]),
   ];
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), 125_000);
+  const timeout = window.setTimeout(() => controller.abort(), 420_000);
 
   try {
     const response = await fetch("/api/transform", {
@@ -103,8 +104,17 @@ export async function createAfterPreview(
       }),
     });
     const data = await response.json().catch(() => ({}));
-    return response.ok && typeof data.image === "string" ? data.image : null;
+    if (response.ok && typeof data.image === "string") return data.image;
+    if (retriesRemaining > 0 && !data.reason) {
+      await new Promise((resolve) => window.setTimeout(resolve, 1_500));
+      return createAfterPreview(image, analysis, retriesRemaining - 1);
+    }
+    return null;
   } catch {
+    if (retriesRemaining > 0) {
+      await new Promise((resolve) => window.setTimeout(resolve, 1_500));
+      return createAfterPreview(image, analysis, retriesRemaining - 1);
+    }
     return null;
   } finally {
     window.clearTimeout(timeout);

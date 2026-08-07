@@ -169,6 +169,19 @@ export default function Home() {
       });
   };
 
+  const retryPreview = () => {
+    if (!selfie || !analysis || afterPending) return;
+    setAfterImage(null);
+    setAfterPending(true);
+    const request = createAfterPreview(selfie, analysis);
+    previewPromise.current = request;
+    request
+      .then((generated) => {
+        if (generated) setAfterImage(generated);
+      })
+      .finally(() => setAfterPending(false));
+  };
+
   return (
     <main className="relative min-h-dvh">
       <header className="relative z-10">
@@ -301,6 +314,7 @@ export default function Home() {
             email={lead?.email ?? null}
             name={lead?.name ?? null}
             phone={lead?.phone ?? null}
+            onRetryPreview={retryPreview}
             onRestart={reset}
           />
         )}

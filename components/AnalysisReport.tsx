@@ -209,7 +209,7 @@ function StickyCta({
   if (!scrolledPast) return null;
 
   return (
-    <div className="no-print fixed bottom-4 inset-x-0 z-40 flex justify-center px-4 pointer-events-none">
+    <div className="safe-fixed-bottom no-print fixed inset-x-0 z-40 flex justify-center px-4 pointer-events-none">
       <div className="pointer-events-auto flex max-w-[calc(100vw-2rem)] items-center gap-2.5 rounded-full border border-white/70 bg-white/85 px-4 py-2.5 backdrop-blur-xl shadow-[0_8px_32px_-10px_rgba(34,30,82,0.35)] sm:gap-3 sm:px-5 sm:py-3">
         {afterPending ? (
           <>
@@ -267,6 +267,7 @@ export default function AnalysisReport({
   email,
   name,
   phone,
+  onRetryPreview,
   onRestart,
 }: {
   before: string;
@@ -280,6 +281,7 @@ export default function AnalysisReport({
   email?: string | null;
   name?: string | null;
   phone?: string | null;
+  onRetryPreview?: () => void;
   onRestart: () => void;
 }) {
   const [lightbox, setLightbox] = useState<string | null>(null);
@@ -547,6 +549,13 @@ export default function AnalysisReport({
               We couldn&rsquo;t render your visual preview this time — your full
               analysis is below.
             </p>
+            {onRetryPreview && (
+              <div className="bg-white/70 pb-4 text-center">
+                <button type="button" onClick={onRetryPreview} className="btn-serum !px-6 !py-3 !text-[0.65rem]">
+                  Retry visual preview
+                </button>
+              </div>
+            )}
           </div>
         )}
         {after && (
