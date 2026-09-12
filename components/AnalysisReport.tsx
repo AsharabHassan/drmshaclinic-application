@@ -12,7 +12,13 @@ import ReviewsSlider from "./ReviewsSlider";
 import CaseStudy from "./CaseStudy";
 import VeluriaEducation from "./VeluriaEducation";
 import VeluriaStack from "./VeluriaStack";
-import { bookingUrl, planSummary, type CtaPlacement } from "@/lib/booking";
+import {
+  TREATMENT_URL,
+  WHATSAPP_URL,
+  planSummary,
+  whatsappUrl,
+  type CtaPlacement,
+} from "@/lib/booking";
 import { expectedImprovement } from "@/lib/expectations";
 import { concernZones, type HeroZone } from "@/lib/hero";
 import { track, trackServer } from "@/lib/meta";
@@ -25,29 +31,16 @@ import {
   downloadDataUrl,
 } from "@/lib/download";
 
-const BOOKING_URL =
-  process.env.NEXT_PUBLIC_BOOKING_URL ?? "https://drmshaclinic.com";
-
-// Dr Sha's online booking calendar for the complimentary phone consultation.
-const CALENDAR_URL =
-  process.env.NEXT_PUBLIC_CALENDAR_URL ??
-  "https://link.drmshaclinic.com/widget/booking/AkcdoWX6eMf2yJvKs6fp";
-
 /**
- * The ask.
- *
- * The label is a PROP with no safe default sentence, because the copy is the
- * point. Every CTA on this page used to read "Free Online Phone Consultation",
- * which describes the format of the call and gives no reason to take it. The
- * client has just been shown where their skin can get to; the button should
- * name that, and each placement names the thing the client is looking at when
- * they reach it.
+ * The ask. Every consultation button on this page reads "Book consultation"
+ * and opens a WhatsApp chat with the clinic, with the client's name and
+ * matched plan pre-filled in their first message (see lib/booking.ts).
  */
-function PhoneConsultButton({
+function ConsultButton({
   variant = "primary",
   className = "",
-  href = CALENDAR_URL,
-  label = "Book your free consultation",
+  href = WHATSAPP_URL,
+  label = "Book consultation",
   onClick,
 }: {
   variant?: "primary" | "ghost";
@@ -65,15 +58,40 @@ function PhoneConsultButton({
       rel="noopener noreferrer"
       className={`${variant === "primary" ? "btn-serum" : "btn-ghost"} ${className}`}
     >
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="shrink-0">
-        <path
-          d="M3 3.5C3 3 3.4 2.5 4 2.5h1.6c.4 0 .8.3.9.7l.6 2.2c.1.4 0 .8-.3 1l-1 .9c.7 1.4 1.8 2.5 3.2 3.2l.9-1c.2-.3.6-.4 1-.3l2.2.6c.4.1.7.5.7.9V13c0 .6-.5 1-1 1A10 10 0 0 1 3 3.5Z"
-          stroke="currentColor"
-          strokeWidth="1.3"
-          strokeLinejoin="round"
-        />
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="shrink-0">
+        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2Zm0 18.15c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 4.54 0 8.24 3.7 8.24 8.24 0 4.55-3.7 8.24-8.24 8.24Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.28Z" />
       </svg>
       {label}
+    </a>
+  );
+}
+
+/**
+ * The second ask. Someone who already knows what they want can skip the
+ * conversation and book straight into the clinic's treatment diary.
+ */
+function TreatmentButton({
+  variant = "ghost",
+  className = "",
+  onClick,
+}: {
+  variant?: "primary" | "ghost";
+  className?: string;
+  onClick?: () => void;
+}) {
+  return (
+    <a
+      href={TREATMENT_URL}
+      onClick={onClick}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`${variant === "primary" ? "btn-serum" : "btn-ghost"} ${className}`}
+    >
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="shrink-0">
+        <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" strokeWidth="1.3" />
+        <path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      </svg>
+      Book a treatment
     </a>
   );
 }
@@ -247,7 +265,7 @@ function StickyCta({
               rel="noopener noreferrer"
               className="shrink-0 whitespace-nowrap rounded-full bg-plum px-4 py-2 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-white shadow-sm transition hover:bg-plum-soft sm:px-5"
             >
-              Book free consultation
+              Book consultation
             </a>
           </>
         )}
@@ -340,7 +358,7 @@ export default function AnalysisReport({
   );
 
   const ctaHref = (placement: CtaPlacement) =>
-    bookingUrl(CALENDAR_URL, {
+    whatsappUrl(WHATSAPP_URL, {
       plan: programme,
       hero,
       name,
@@ -355,6 +373,15 @@ export default function AnalysisReport({
    * the page would otherwise be swallowed and we would lose the placement
    * comparison that the utm_content param exists to answer.
    */
+  const onTreatmentClick = (placement: CtaPlacement) => () => {
+    track("Schedule", { plan: planText, focus: hero?.area ?? "", placement, kind: "treatment" }, true);
+    trackServer(email, "TreatmentBookingClicked", {
+      plan: planText,
+      focus: hero?.area ?? "",
+      placement,
+    });
+  };
+
   const onBookingClick = (placement: CtaPlacement) => () => {
     track("Schedule", { plan: planText, focus: hero?.area ?? "", placement }, true);
     trackServer(email, "BookingClicked", {
@@ -502,13 +529,15 @@ export default function AnalysisReport({
           categories={analysis.categories}
           cta={
             <>
-              <PhoneConsultButton
-                href={ctaHref("score")}
-                onClick={onBookingClick("score")}
-                label="Choose a time to review my results"
-              />
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <ConsultButton
+                  href={ctaHref("score")}
+                  onClick={onBookingClick("score")}
+                />
+                <TreatmentButton onClick={onTreatmentClick("score")} />
+              </div>
               <p className="text-xs text-plum-mute">
-                15 minutes with Dr Sha — no cost, no obligation.
+                15 minutes with Dr Sha — no obligation.
               </p>
             </>
           }
@@ -517,7 +546,7 @@ export default function AnalysisReport({
 
       <section className="animate-fade-scale" style={{ animationDelay: "70ms" }}>
         <VeluriaEducation report clinicName="Dr. M. Sha Wellness & Aesthetics Clinic" programme={programme}
-          cta={<PhoneConsultButton href={ctaHref("rejuvenation")} onClick={onBookingClick("rejuvenation")} label="Ask what is realistic for my skin" />} />
+          cta={<ConsultButton href={ctaHref("rejuvenation")} onClick={onBookingClick("rejuvenation")} />} />
       </section>
 
       {/* Before / After */}
@@ -604,7 +633,7 @@ export default function AnalysisReport({
           <div className="mt-8 overflow-hidden rounded-[1.75rem] border border-serum/20 bg-plum px-6 py-7 text-white shadow-[0_24px_70px_-30px_rgba(16,52,54,0.7)] sm:px-8 sm:py-8">
             <div className="grid gap-6 sm:grid-cols-[1fr_auto] sm:items-center">
               <div>
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-serum">Free 15-minute results review</p>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-serum">15-minute results review</p>
                 <h3 className="display mt-2 text-2xl text-white sm:text-3xl">Turn your preview into a realistic plan</h3>
                 <ul className="mt-4 grid gap-2 text-sm leading-relaxed text-white/80">
                   <li>• Review what the simulation can and cannot predict</li>
@@ -613,8 +642,8 @@ export default function AnalysisReport({
                 </ul>
               </div>
               <div className="flex flex-col items-start gap-2 sm:items-center">
-                <PhoneConsultButton href={ctaHref("hero-zoom")} onClick={onBookingClick("hero-zoom")} label="Review what is realistic for me" />
-                <p className="text-xs text-white/60">Your contact details are pre-filled.</p>
+                <ConsultButton href={ctaHref("hero-zoom")} onClick={onBookingClick("hero-zoom")} />
+                <p className="text-xs text-white/60">Opens a WhatsApp chat with the clinic.</p>
               </div>
             </div>
           </div>
@@ -645,14 +674,11 @@ export default function AnalysisReport({
           and are not guaranteed. Not medical advice.
         </p>
         <div className="mt-6 flex flex-col items-center gap-2">
-          <PhoneConsultButton
+          <ConsultButton
             href={ctaHref("preview")}
             onClick={onBookingClick("preview")}
-            label="Talk this through with Dr Sha"
           />
-          <p className="text-xs text-plum-mute">
-            Free consultation — no cost, no obligation.
-          </p>
+          <p className="text-xs text-plum-mute">No obligation.</p>
         </div>
       </section>
 
@@ -662,11 +688,13 @@ export default function AnalysisReport({
           <VeluriaStack
             programme={programme}
             cta={
-              <PhoneConsultButton
-                href={ctaHref("stack")}
-                onClick={onBookingClick("stack")}
-                label="Book your free consultation"
-              />
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <ConsultButton
+                  href={ctaHref("stack")}
+                  onClick={onBookingClick("stack")}
+                />
+                <TreatmentButton onClick={onTreatmentClick("stack")} />
+              </div>
             }
           />
         </section>
@@ -745,10 +773,9 @@ export default function AnalysisReport({
         </div>
         <CaseStudy />
         <div className="mt-6 flex justify-center">
-          <PhoneConsultButton
+          <ConsultButton
             href={ctaHref("case-study")}
             onClick={onBookingClick("case-study")}
-            label="Start with a free consultation"
           />
         </div>
       </section>
@@ -812,18 +839,14 @@ export default function AnalysisReport({
           <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-plum-soft">
             You have seen where your skin can get to and which part of the
             Veluria range it matched. What it actually takes to get you there is
-            Dr Sha&rsquo;s to work out with you — and that costs nothing to find
-            out.
+            Dr Sha&rsquo;s to work out with you.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <PhoneConsultButton
+            <ConsultButton
               href={ctaHref("footer")}
               onClick={onBookingClick("footer")}
-              label="Book your free consultation"
             />
-            <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
-              Explore treatments
-            </a>
+            <TreatmentButton onClick={onTreatmentClick("footer")} />
           </div>
         </div>
         <button

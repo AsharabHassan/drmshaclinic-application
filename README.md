@@ -37,7 +37,8 @@ Set these in **Vercel → Project → Settings → Environment Variables** (and 
 | `ANTHROPIC_API_KEY` | Yes | Claude vision — the written skin analysis. |
 | `OPENAI_API_KEY` | Yes | `gpt-image-2` — the before/after + treatment-map image. |
 | `GHL_WEBHOOK_URL` | Yes* | GoHighLevel inbound webhook; leads are POSTed here. If unset, the lead is logged and the user still reaches results. |
-| `NEXT_PUBLIC_BOOKING_URL` | Yes | Where the "Book a consultation" button sends users. |
+| `NEXT_PUBLIC_WHATSAPP_URL` | No | WhatsApp click-to-chat link behind every "Book consultation" button. Defaults to the clinic's number. |
+| `NEXT_PUBLIC_TREATMENT_URL` | No | Online booking portal behind every "Book a treatment" button. Defaults to the clinic's portal. |
 | `NEXT_PUBLIC_META_PIXEL_ID` | No | Meta Pixel ID for PageView/Lead events + CAPI matching. Leave unset for the demo; set the real Sirona pixel before any campaign. |
 
 ## Deploying on Vercel

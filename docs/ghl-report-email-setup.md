@@ -3,8 +3,9 @@
 When a customer finishes their AI skin analysis, the app:
 1. builds their report PDF and uploads it to the GHL media library,
 2. stores the file URL on the contact's **Facial Report Pdf** field, and
-3. emails the customer their report as a PDF attachment, with a **"Book your
-   free consultation"** CTA linking to the booking calendar.
+3. emails the customer their report as a PDF attachment, with a **"Book
+   consultation"** CTA opening WhatsApp and a **"Book a treatment"** CTA
+   opening the online booking portal.
 
 The email is sent **by the app**, *before* booking — it encourages the customer
 to book. GHL still handles its own booking-confirmation emails separately, so
@@ -21,7 +22,6 @@ Set these in **Vercel → Project → Settings → Environment Variables** (and 
 | `GHL_LOCATION_ID` | `XnwkbaimNt2dfzDG3w4K` |
 | `GHL_REPORT_FIELD_KEY` | `facial_report_pdf` |
 | `GHL_REPORT_FIELD_ID` | `Glut0DNmtFHMAvhwuHbn` (id of the Facial Report Pdf field) |
-| `GHL_BOOKING_URL` | `https://link.drmshaclinic.com/widget/bookings/free-online-phone-consultation` (optional — this is the default) |
 
 The Private Integration token needs scopes: **Contacts** (read + write),
 **Medias** (write), and **Conversations / Conversations Messages** (write).

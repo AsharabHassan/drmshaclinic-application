@@ -12,8 +12,8 @@ export const maxDuration = 30;
 
 /**
  * Captures the customer's report PDF into GHL at results time and — once the
- * report is finalised — emails it to the customer with a "book your free
- * consultation" CTA. Sent BEFORE booking, by the app; GHL handles its own
+ * report is finalised — emails it to the customer with "Book
+ * consultation" (WhatsApp) and "Book a treatment" CTAs. Sent BEFORE booking, by the app; GHL handles its own
  * booking-confirmation emails separately. Sent on EVERY completed analysis (no
  * per-contact de-dupe) — the same email may be reused for a different person's
  * photo, and each of those is a genuinely new report. The client fires the
